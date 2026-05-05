@@ -1,0 +1,28 @@
+<h2>V0.1 技术验证——从哪里开始？</h2>
+<p class="subtitle">三个粒子特效体验，选一个作为第一个技术验证点</p>
+
+<div class="options">
+  <div class="option" data-choice="particles" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>点云粒子背景</h3>
+      <p>全屏分形粒子动画 + 鼠标位移扰动效果。验证 React Three Fiber 粒子性能和手感。</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="preloader" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>入场动画（Preloader + Intro）</h3>
+      <p>光点呼吸律动 → 炸裂粒子铺满 → 文字粒子汇聚 → Blur-to-Clear 浮现 Dashboard。验证 GSAP 时间线和动画编排。</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="asset-number" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>总资产粒子数字</h3>
+      <p>数字由粒子汇聚而成，数字变化时粒子重组动画。验证数字渲染 + 粒子物理 + 动画联动。</p>
+    </div>
+  </div>
+</div>
