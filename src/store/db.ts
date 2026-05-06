@@ -32,8 +32,8 @@ class VaultDatabase extends Dexie {
 
   constructor() {
     super('vault');
-    this.version(1).stores({
-      transactions: '++id, type, date',
+    this.version(2).stores({
+      transactions: '++id, type, date, wishId',
       wishes: '++id, status'
     });
   }
