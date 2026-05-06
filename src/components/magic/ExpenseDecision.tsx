@@ -7,7 +7,6 @@ interface ExpenseDecisionProps {
   onCancel: () => void;
 }
 
-// Spring physics for premium feel
 const springTransition = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
 
 export function ExpenseDecision({ amount, category, onConfirm, onCancel }: ExpenseDecisionProps) {
@@ -16,10 +15,9 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
   const [entering, setEntering] = useState(false);
 
   useEffect(() => {
-    // Staggered entrance
     requestAnimationFrame(() => {
       setTimeout(() => setVisible(true), 20);
-      setTimeout(() => setEntering(true), 60);
+      setTimeout(() => setEntering(true), 80);
     });
   }, []);
 
@@ -37,9 +35,9 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
           position: 'fixed',
           inset: 0,
           zIndex: 75,
-          background: 'rgba(13,13,16,0.85)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          background: 'rgba(180,185,195,0.45)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
           opacity: visible ? 1 : 0,
           transition: 'opacity 0.35s ease',
           pointerEvents: visible ? 'auto' : 'none',
@@ -55,34 +53,34 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
           right: 0,
           zIndex: 80,
           padding: '32px 28px 40px',
-          background: 'linear-gradient(180deg, #1c1b19 0%, #16150f 100%)',
-          borderTop: '1px solid rgba(232,184,75,0.25)',
-          borderRadius: '24px 24px 0 0',
-          boxShadow: '0 -4px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(232,184,75,0.1)',
+          background: '#e8edf2',
+          borderRadius: '28px 28px 0 0',
+          boxShadow: '0 -8px 32px rgba(163,170,182,0.35)',
           transform: visible && entering ? 'translateY(0)' : 'translateY(100%)',
           transition: `transform 0.5s ${springTransition}, opacity 0.3s ease`,
           opacity: visible ? 1 : 0,
         }}
       >
-        {/* Decorative top line */}
+        {/* Top pill handle */}
         <div style={{
           position: 'absolute',
-          top: '12px',
+          top: '14px',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: '36px',
-          height: '4px',
-          background: 'rgba(232,184,75,0.3)',
-          borderRadius: '2px',
+          width: '40px',
+          height: '5px',
+          background: '#d1d8e2',
+          borderRadius: '3px',
+          boxShadow: 'inset 2px 2px 4px #b8c0cc, inset -2px -2px 4px #ffffff',
         }} />
 
         {/* Header */}
-        <div style={{ marginBottom: '28px', textAlign: 'center' }}>
+        <div style={{ marginBottom: '28px', marginTop: '8px', textAlign: 'center' }}>
           <div style={{
-            fontFamily: "'Noto Serif SC', serif",
-            fontSize: '13px',
-            letterSpacing: '0.3em',
-            color: 'rgba(232,184,75,0.5)',
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '11px',
+            letterSpacing: '0.35em',
+            color: '#a0aec0',
             textTransform: 'uppercase',
             marginBottom: '10px',
           }}>
@@ -96,19 +94,18 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
           }}>
             <span style={{
               fontFamily: "'Noto Serif SC', serif",
-              fontSize: 'clamp(36px, 8vw, 48px)',
+              fontSize: 'clamp(40px, 10vw, 52px)',
               fontWeight: 400,
-              color: '#EEE8DC',
+              color: '#2d3748',
               letterSpacing: '-0.02em',
               lineHeight: 1,
-              textShadow: '0 0 40px rgba(232,184,75,0.15)',
             }}>
               {amount}
             </span>
             <span style={{
               fontFamily: "'Noto Sans SC', sans-serif",
               fontSize: '14px',
-              color: 'rgba(232,184,75,0.5)',
+              color: '#718096',
               letterSpacing: '0.1em',
             }}>
               元
@@ -118,61 +115,46 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
             marginTop: '8px',
             fontFamily: "'Noto Sans SC', sans-serif",
             fontSize: '12px',
-            color: 'rgba(122,117,110,0.6)',
-            letterSpacing: '0.15em',
+            color: '#a0aec0',
+            letterSpacing: '0.2em',
             textTransform: 'uppercase',
           }}>
             {category}
           </div>
         </div>
 
-        {/* Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+        {/* Buttons — Neumorphic raised style */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
           {/* Worthy */}
           <button
             onClick={() => setSelected('worthy')}
             style={{
               position: 'relative',
               padding: '18px 16px',
-              borderRadius: '16px',
-              border: selected === 'worthy' ? '1.5px solid #6DBF82' : '1.5px solid rgba(109,191,130,0.2)',
-              background: selected === 'worthy'
-                ? 'linear-gradient(135deg, rgba(109,191,130,0.12) 0%, rgba(109,191,130,0.06) 100%)'
-                : 'rgba(255,255,255,0.02)',
-              cursor: 'pointer',
-              transition: `all 0.3s ${springTransition}`,
+              borderRadius: '18px',
+              border: 'none',
+              background: '#e8edf2',
               boxShadow: selected === 'worthy'
-                ? '0 0 24px rgba(109,191,130,0.15), inset 0 1px 0 rgba(109,191,130,0.2)'
-                : 'none',
-              overflow: 'hidden',
+                ? 'inset 6px 6px 12px #b8c0cc, inset -6px -6px 12px #ffffff'
+                : '6px 6px 12px #b8c0cc, -6px -6px 12px #ffffff',
+              cursor: 'pointer',
+              transition: `all 0.25s ${springTransition}`,
             }}
             onMouseEnter={e => {
               if (selected !== 'worthy') {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(109,191,130,0.4)';
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(109,191,130,0.04)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '8px 8px 16px #b8c0cc, -8px -8px 16px #ffffff';
               }
             }}
             onMouseLeave={e => {
               if (selected !== 'worthy') {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(109,191,130,0.2)';
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.02)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 12px #b8c0cc, -6px -6px 12px #ffffff';
               }
             }}
           >
-            {/* Inner glow for liquid glass effect */}
-            {selected === 'worthy' && (
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '14px',
-                boxShadow: 'inset 0 1px 0 rgba(109,191,130,0.15)',
-                pointerEvents: 'none',
-              }} />
-            )}
             <div style={{
               fontFamily: "'Noto Serif SC', serif",
-              fontSize: '15px',
-              color: selected === 'worthy' ? '#6DBF82' : 'rgba(109,191,130,0.5)',
+              fontSize: '16px',
+              color: selected === 'worthy' ? '#4a9c6d' : '#68c493',
               letterSpacing: '0.1em',
               transition: 'color 0.2s ease',
               display: 'flex',
@@ -182,7 +164,7 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
             }}>
               {selected === 'worthy' && (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 7L5.5 10.5L12 3" stroke="#6DBF82" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 7L5.5 10.5L12 3" stroke="#4a9c6d" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               )}
               值得
@@ -195,43 +177,30 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
             style={{
               position: 'relative',
               padding: '18px 16px',
-              borderRadius: '16px',
-              border: selected === 'unworthy' ? '1.5px solid #D97373' : '1.5px solid rgba(217,115,115,0.2)',
-              background: selected === 'unworthy'
-                ? 'linear-gradient(135deg, rgba(217,115,115,0.12) 0%, rgba(217,115,115,0.06) 100%)'
-                : 'rgba(255,255,255,0.02)',
-              cursor: 'pointer',
-              transition: `all 0.3s ${springTransition}`,
+              borderRadius: '18px',
+              border: 'none',
+              background: '#e8edf2',
               boxShadow: selected === 'unworthy'
-                ? '0 0 24px rgba(217,115,115,0.15), inset 0 1px 0 rgba(217,115,115,0.2)'
-                : 'none',
+                ? 'inset 6px 6px 12px #b8c0cc, inset -6px -6px 12px #ffffff'
+                : '6px 6px 12px #b8c0cc, -6px -6px 12px #ffffff',
+              cursor: 'pointer',
+              transition: `all 0.25s ${springTransition}`,
             }}
             onMouseEnter={e => {
               if (selected !== 'unworthy') {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(217,115,115,0.4)';
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(217,115,115,0.04)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '8px 8px 16px #b8c0cc, -8px -8px 16px #ffffff';
               }
             }}
             onMouseLeave={e => {
               if (selected !== 'unworthy') {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(217,115,115,0.2)';
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.02)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 12px #b8c0cc, -6px -6px 12px #ffffff';
               }
             }}
           >
-            {selected === 'unworthy' && (
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '14px',
-                boxShadow: 'inset 0 1px 0 rgba(217,115,115,0.15)',
-                pointerEvents: 'none',
-              }} />
-            )}
             <div style={{
               fontFamily: "'Noto Serif SC', serif",
-              fontSize: '15px',
-              color: selected === 'unworthy' ? '#D97373' : 'rgba(217,115,115,0.5)',
+              fontSize: '16px',
+              color: selected === 'unworthy' ? '#c25050' : '#e07070',
               letterSpacing: '0.1em',
               transition: 'color 0.2s ease',
               display: 'flex',
@@ -241,7 +210,7 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
             }}>
               {selected === 'unworthy' && (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M3 3L11 11M11 3L3 11" stroke="#D97373" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M3 3L11 11M11 3L3 11" stroke="#c25050" strokeWidth="1.8" strokeLinecap="round"/>
                 </svg>
               )}
               不值
@@ -250,23 +219,25 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
         </div>
 
         {/* Confirm + Cancel */}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button
             onClick={onCancel}
             style={{
               flex: '0 0 auto',
-              padding: '10px 20px',
+              padding: '12px 20px',
               background: 'transparent',
               border: 'none',
-              color: 'rgba(122,117,110,0.5)',
+              color: '#a0aec0',
               fontFamily: "'Noto Sans SC', sans-serif",
               fontSize: '13px',
               letterSpacing: '0.08em',
               cursor: 'pointer',
-              transition: 'color 0.2s ease',
+              boxShadow: '3px 3px 6px #b8c0cc, -3px -3px 6px #ffffff',
+              borderRadius: '14px',
+              transition: `all 0.2s ${springTransition}`,
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(122,117,110,0.8)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(122,117,110,0.5)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#718096'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#a0aec0'; }}
           >
             取消
           </button>
@@ -276,48 +247,33 @@ export function ExpenseDecision({ amount, category, onConfirm, onCancel }: Expen
             disabled={!selected}
             style={{
               flex: 1,
-              padding: '15px',
-              borderRadius: '14px',
+              padding: '16px',
+              borderRadius: '18px',
               border: 'none',
               background: selected
-                ? 'linear-gradient(135deg, rgba(232,184,75,0.15) 0%, rgba(232,184,75,0.08) 100%)'
-                : 'rgba(255,255,255,0.04)',
-              color: selected ? '#E8B84B' : 'rgba(122,117,110,0.3)',
+                ? 'linear-gradient(145deg, #f0f5fc, #dde4ec)'
+                : '#e8edf2',
+              color: selected ? '#d4a843' : '#c0c8d4',
               fontFamily: "'Noto Serif SC', serif",
               fontSize: '15px',
               fontWeight: 400,
               letterSpacing: '0.15em',
               cursor: selected ? 'pointer' : 'not-allowed',
               boxShadow: selected
-                ? '0 0 20px rgba(232,184,75,0.1), inset 0 1px 0 rgba(232,184,75,0.15)'
-                : 'none',
-              transition: `all 0.3s ${springTransition}`,
+                ? '6px 6px 12px #b8c0cc, -6px -6px 12px #ffffff'
+                : '4px 4px 8px #b8c0cc, -4px -4px 8px #ffffff',
+              transition: `all 0.25s ${springTransition}`,
               transform: selected ? 'scale(1)' : 'scale(0.98)',
             }}
-            onMouseEnter={e => {
-              if (selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.01)';
-            }}
-            onMouseLeave={e => {
-              if (selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-            }}
-            onMouseDown={e => {
-              if (selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.97)';
-            }}
-            onMouseUp={e => {
-              if (selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.01)';
-            }}
+            onMouseEnter={e => { if (selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.02)'; }}
+            onMouseLeave={e => { if (selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
+            onMouseDown={e => { if (selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.97)'; }}
+            onMouseUp={e => { if (selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.02)'; }}
           >
             确认
           </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
     </>
   );
 }

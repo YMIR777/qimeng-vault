@@ -1,25 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap');
 
-/* ─── CSS Variables ─── */
+/* ─── CSS Variables — 新拟物派 ─── */
 :root {
-  /* 私密宝库 — 暗金奢华 */
-  --bg-primary: #0d0d10;
-  --bg-secondary: #16150f;
-  --bg-card: #1c1b19;
-  --text-primary: #EEE8DC;
-  --text-secondary: #7A756E;
-  --text-muted: #5A5652;
-  --accent-blue: #4FC3F7;
-  --accent-gold: #E8B84B;
-  --accent-gold-bright: #F0C96A;
-  --accent-gold-dim: rgba(232, 184, 75, 0.15);
-  --accent-gold-glow: rgba(232, 184, 75, 0.25);
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-gold: rgba(232, 184, 75, 0.2);
-  --glass-bg: rgba(28, 27, 25, 0.92);
-  --glass-border: rgba(232, 184, 75, 0.12);
-  --success: #6DBF82;
-  --danger: #D97373;
+  /* 主背景 — 柔和浅灰 */
+  --bg-primary: #e8edf2;
+  --bg-secondary: #dde3eb;
+  --bg-card: #e8edf2;
+  --text-primary: #2d3748;
+  --text-secondary: #718096;
+  --text-muted: #a0aec0;
+
+  /* 新拟物强调色 */
+  --accent-blue: #5a9fd4;
+  --accent-gold: #d4a843;
+  --accent-gold-dim: rgba(212, 168, 67, 0.12);
+  --success: #68c493;
+  --danger: #e07070;
+
+  /* 新拟物阴影色 */
+  --shadow-dark: #b8c0cc;
+  --shadow-light: #ffffff;
+
+  /* 双阴影变量 */
+  --neu-raised: 8px 8px 16px #b8c0cc, -8px -8px 16px #ffffff;
+  --neu-raised-sm: 4px 4px 8px #b8c0cc, -4px -4px 8px #ffffff;
+  --neu-inset: inset 6px 6px 12px #b8c0cc, inset -6px -6px 12px #ffffff;
+  --neu-inset-sm: inset 3px 3px 6px #b8c0cc, inset -3px -3px 6px #ffffff;
 
   /* Typography */
   --font-display: 'Noto Serif SC', serif;
@@ -37,21 +43,17 @@
   /* Transitions */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
 
   /* Radii */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
   --radius-full: 9999px;
 }
 
-/* ─── Background Layer ─── */
+/* ─── Background ─── */
 body {
-  background:
-    radial-gradient(ellipse at 20% 0%, rgba(232,184,75,0.04) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 100%, rgba(79,195,247,0.03) 0%, transparent 55%),
-    linear-gradient(180deg, #0d0d10 0%, #0f0e0b 50%, #0d0d10 100%);
+  background: var(--bg-primary);
   background-attachment: fixed;
 }
 
@@ -78,30 +80,27 @@ body {
 
 /* ─── Selection ─── */
 ::selection {
-  background: rgba(232, 184, 75, 0.15);
+  background: rgba(90, 159, 212, 0.2);
   color: var(--text-primary);
 }
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-secondary);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(232, 184, 75, 0.15);
+  background: var(--shadow-dark);
   border-radius: var(--radius-full);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(232, 184, 75, 0.3);
 }
 
 /* ─── Focus ─── */
 :focus-visible {
-  outline: 1.5px solid var(--accent-gold);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: var(--neu-inset-sm);
   border-radius: var(--radius-sm);
 }
 
@@ -109,20 +108,40 @@ body {
 h1, h2, h3 {
   font-family: var(--font-display);
   font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0.04em;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
 }
 
-/* ─── Glass card ─── */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  border: 1px solid var(--glass-border);
+/* ─── Neumorphic Card ─── */
+.neu-card {
+  background: var(--bg-card);
   border-radius: var(--radius-lg);
-  box-shadow:
-    0 4px 24px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(232,184,75,0.06);
+  box-shadow: var(--neu-raised);
+}
+
+.neu-card-inset {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-inset);
+}
+
+.neu-btn {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-raised-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-spring);
+}
+
+.neu-btn:active {
+  box-shadow: var(--neu-inset-sm);
+  transform: scale(0.98);
+}
+
+.neu-btn-primary {
+  background: linear-gradient(145deg, #f0f5fc, #d5dce6);
+  color: var(--accent-gold);
 }
 
 /* ─── Utility ─── */

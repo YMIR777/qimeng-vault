@@ -67,11 +67,10 @@ export function TabBar() {
         right: 0,
         zIndex: 50,
         display: 'flex',
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid var(--border-subtle)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
+        padding: '10px 16px 12px',
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+        background: '#e8edf2',
+        boxShadow: '0 -4px 16px rgba(163,170,182,0.3)',
       }}
     >
       {tabs.map((tab) => {
@@ -85,21 +84,22 @@ export function TabBar() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '3px',
-              padding: '10px 8px 12px',
+              gap: '4px',
+              padding: '10px 8px',
               textDecoration: 'none',
-              color: active ? 'var(--accent-blue)' : 'var(--text-muted)',
-              transition: 'color 0.2s ease',
+              borderRadius: '14px',
+              background: active ? 'transparent' : 'transparent',
+              boxShadow: active ? 'inset 3px 3px 6px #b8c0cc, inset -3px -3px 6px #ffffff' : 'none',
+              color: active ? '#d4a843' : '#a0aec0',
+              transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}
           >
             {tab.icon}
-            <span
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '10px',
-                letterSpacing: '0.08em',
-              }}
-            >
+            <span style={{
+              fontFamily: "'Noto Sans SC', sans-serif",
+              fontSize: '10px',
+              letterSpacing: '0.08em',
+            }}>
               {tab.label}
             </span>
           </Link>

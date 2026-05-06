@@ -20,15 +20,15 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
 
   return (
     <div style={{ position: 'relative' }}>
+      {/* Neumorphic inset input area */}
       <div style={{
-        borderRadius: '16px',
-        border: `1.5px solid ${focused ? 'var(--accent-blue)' : 'var(--border-subtle)'}`,
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
-        padding: '3px',
-        transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
-        boxShadow: focused ? '0 0 0 1.5px var(--accent-blue), 0 6px 36px rgba(79,195,247,0.13)' : 'none',
+        borderRadius: '20px',
+        background: '#e8edf2',
+        boxShadow: focused
+          ? 'inset 6px 6px 12px #b8c0cc, inset -6px -6px 12px #ffffff'
+          : 'inset 4px 4px 8px #b8c0cc, inset -4px -4px 8px #ffffff',
+        transition: `all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)`,
+        padding: '4px',
       }}>
         <input
           type="text"
@@ -44,13 +44,13 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            fontFamily: 'var(--font-display)',
+            fontFamily: "'Noto Serif SC', serif",
             fontSize: 'clamp(15px, 2.5vw, 19px)',
             fontWeight: 400,
             letterSpacing: '0.05em',
-            color: 'var(--text-primary)',
+            color: '#2d3748',
             textAlign: 'center',
-            caretColor: 'var(--accent-gold)',
+            caretColor: '#d4a843',
           }}
         />
       </div>
