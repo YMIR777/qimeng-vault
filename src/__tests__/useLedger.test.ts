@@ -1,41 +1,50 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+
+// Mock the db module before importing useLedger
+vi.mock('../store/db', () => {
+  const mockAdd = vi.fn().mockResolvedValue(undefined);
+  const mockToArray = vi.fn().mockResolvedValue([]);
+  return {
+    db: {
+      transactions: {
+        toArray: mockToArray,
+        add: mockAdd,
+      },
+      wishes: {
+        toArray: vi.fn().mockResolvedValue([]),
+      },
+    },
+    Transaction: {},
+  };
+});
+
+// Import after mocking
 import { useLedger } from '../store/useLedger';
-
-// Mock IndexedDB for test environment
-const mockDb: any = {
-  transactions: {
-    toArray: vi.fn().mockResolvedValue([]),
-    add: vi.fn().mockResolvedValue(undefined),
-  },
-  wishes: {
-    toArray: vi.fn().mockResolvedValue([]),
-  },
-};
-
-// We need to mock the db module before importing useLedger
-vi.mock('../store/db', () => ({
-  db: mockDb,
-  Transaction: {},
-}));
+import { db } from '../store/db';
 
 describe('useLedger hook', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    mockDb.transactions.toArray.mockResolvedValue([]);
-    mockDb.transactions.add.mockResolvedValue(undefined);
+    // Reset the mock to return empty array
+    vi.mocked(db.transactions.toArray).mockResolvedValue([]);
+    vi.mocked(db.transactions.add).mockResolvedValue(undefined);
   });
 
   it('initializes with empty transactions', async () => {
     const { result } = renderHook(() => useLedger());
-    // Wait for useEffect to run
-    await act(async () => {});
+    await act(async () => {
+      // Wait for useEffect to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
     expect(Array.isArray(result.current.transactions)).toBe(true);
   });
 
   it('returns addTransaction function', async () => {
     const { result } = renderHook(() => useLedger());
-    await act(async () => {});
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
     expect(typeof result.current.addTransaction).toBe('function');
   });
 });
