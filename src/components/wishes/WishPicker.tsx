@@ -206,7 +206,7 @@ export const WishPicker: React.FC<WishPickerProps> = ({
                   fontSize: '10px',
                   color: '#a89f8e',
                 }}>
-                  ¥{(wish.currentBalance + amount).toLocaleString()} / ¥{wish.targetPrice.toLocaleString()}
+                  ¥{wish.currentBalance.toLocaleString()} / ¥{wish.targetPrice.toLocaleString()}
                 </div>
                 {achieved(wish) && (
                   <div style={{
