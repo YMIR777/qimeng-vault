@@ -33,7 +33,6 @@ export const WishBottle: React.FC<WishBottleProps> = ({
   const bodyHeight = bodyBottom - bodyTop;
   // Neck: y=20 to y=50
   const neckTop = 20;
-  const neckBottom = 50;
 
   // Liquid fill: starts from bodyBottom and goes up
   const fillHeight = (percentage / 100) * bodyHeight;

@@ -33,8 +33,8 @@ describe('useWishes hook', () => {
     vi.clearAllMocks();
     vi.mocked(db.wishes.toArray).mockResolvedValue([]);
     vi.mocked(db.wishes.add).mockResolvedValue(undefined);
-    vi.mocked(db.wishes.get).mockResolvedValue(undefined);
-    vi.mocked(db.wishes.update).mockResolvedValue(undefined);
+    vi.mocked(db.wishes.get).mockResolvedValue(undefined as any);
+    vi.mocked(db.wishes.update).mockResolvedValue(0);
     vi.mocked(db.wishes.delete).mockResolvedValue(undefined);
   });
 
