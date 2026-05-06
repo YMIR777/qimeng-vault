@@ -10,8 +10,9 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
   const [value, setValue] = useState('');
   const [focused, setFocused] = useState(false);
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' && value.trim()) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey && value.trim()) {
+      e.preventDefault();
       const result = parseInput(value.trim());
       onSubmit(result);
       setValue('');
@@ -30,27 +31,30 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
         transition: `all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)`,
         padding: '4px',
       }}>
-        <input
-          type="text"
+        <textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onKeyDown={handleKeyDown}
-          placeholder="输入金额，自动识别收入或支出…"
+          placeholder="写下今天做了什么…&#10;比如：涵涵给我存了1000块 / 打车回家花了35"
+          rows={1}
           style={{
             width: '100%',
             padding: '18px 24px',
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            fontFamily: "'Noto Serif SC', serif",
-            fontSize: 'clamp(15px, 2.5vw, 19px)',
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: 'clamp(14px, 2.5vw, 17px)',
             fontWeight: 400,
-            letterSpacing: '0.05em',
+            letterSpacing: '0.02em',
             color: '#3d3427',
             textAlign: 'center',
             caretColor: '#c9923a',
+            resize: 'none',
+            lineHeight: 1.6,
+            minHeight: '56px',
           }}
         />
       </div>

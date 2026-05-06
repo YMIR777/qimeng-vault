@@ -25,11 +25,18 @@ export function useLedger() {
     await db.transactions.add({ ...tx, id, createdAt: Date.now() });
     const all = await db.transactions.toArray();
     setTransactions(all);
+    return id;
+  };
+
+  const updateTransaction = async (id: string, patch: Partial<Transaction>) => {
+    await db.transactions.update(id, patch);
+    const all = await db.transactions.toArray();
+    setTransactions(all);
   };
 
   const getTransactionsByWish = async (wishId: string) => {
     return await db.transactions.where('wishId').equals(wishId).toArray();
   };
 
-  return { transactions, totalAsset, addTransaction, getTransactionsByWish };
+  return { transactions, totalAsset, addTransaction, updateTransaction, getTransactionsByWish };
 }

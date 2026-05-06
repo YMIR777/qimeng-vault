@@ -12,8 +12,13 @@ export interface ParseResult {
 }
 
 const PLATFORMS = ['比心', '微信', '抖音', '小红书', '建行', '招行'];
-const EXPENSE_KEYWORDS = ['花了', '支出', '买', '消费', '转出', '块', '元', '钱'];
-const INCOME_KEYWORDS = ['转', '收到', '收入', '到账', '比心', '陪玩'];
+
+// 收入关键词：收到钱的方向性动作
+const INCOME_KEYWORDS = ['收到', '到账', '存了', '给了', '比心', '陪玩', '转账', '工资', '退款', '报销'];
+
+// 支出关键词：花钱的方向性动作（注意：不包含"块/元/钱"——那只是金额单位！）
+const EXPENSE_KEYWORDS = ['花了', '支出', '买', '消费', '转出', '付了', '支付', '缴费', '外卖', '打车'];
+
 const BOSS_KEYWORDS = ['老板', '甲', '乙', '丙', '丁'];
 const TIME_KEYWORDS_HOUR = ['h', '小时', 'hours', 'hour'];
 const TIME_KEYWORDS_MIN = ['分钟', 'min', 'mins'];
@@ -81,29 +86,37 @@ function detectCategory(text: string): string {
   return '其他';
 }
 
+function detectDirection(text: string): { type: 'income' | 'expense' | null; confidence: number } {
+  // 1. 收入强信号
+  for (const kw of INCOME_KEYWORDS) {
+    if (text.includes(kw)) return { type: 'income', confidence: 0.9 };
+  }
+  
+  // 2. 支出强信号
+  for (const kw of EXPENSE_KEYWORDS) {
+    if (text.includes(kw)) return { type: 'expense', confidence: 0.9 };
+  }
+  
+  // 3. 消费分类词 → 支出
+  for (const kw of Object.keys(EXPENSE_CATEGORIES)) {
+    if (text.includes(kw)) return { type: 'expense', confidence: 0.7 };
+  }
+  
+  // 4. 平台关键词 → 收入（陪玩收入通常带平台名）
+  const hasPlatform = detectPlatform(text);
+  if (hasPlatform) return { type: 'income', confidence: 0.6 };
+  
+  // 5. 无法判断
+  return { type: null, confidence: 0 };
+}
+
 export function parseInput(input: string): ParseResult {
   const amount = extractMaxNumber(input);
   if (amount === 0) {
     return { type: null, amount: 0, complete: false, missingFields: ['amount'] };
   }
 
-  const hasIncomeKeyword = INCOME_KEYWORDS.some(k => input.includes(k));
-  const hasExpenseKeyword = EXPENSE_KEYWORDS.some(k => input.includes(k));
-  const hasPlatform = detectPlatform(input);
-  
-  let type: 'income' | 'expense' | null = null;
-  if (hasIncomeKeyword && hasPlatform) type = 'income';
-  else if (hasExpenseKeyword) type = 'expense';
-  else if (hasPlatform) type = 'income';
-  else {
-    // 没有明确关键词时，如果有消费分类词 → expense，否则默认 expense（日常随手记大多是支出）
-    const hasExpenseCategory = Object.keys(EXPENSE_CATEGORIES).some(k => input.includes(k));
-    type = hasExpenseCategory ? 'expense' : 'income';
-  }
-
-  // Extract description: the Chinese text before the amount number
-  const description = extractDescription(input, amount);
-
+  const { type } = detectDirection(input);
   const platform = detectPlatform(input);
   const bossName = extractBossName(input);
   const timeSpent = extractTimeSpent(input);
@@ -112,26 +125,37 @@ export function parseInput(input: string): ParseResult {
     const missingFields: string[] = [];
     if (!platform) missingFields.push('platform');
     const complete = !!platform;
-    return { type, platform, amount, bossName, timeSpent, note: description || input, complete, missingFields };
+    return { 
+      type, 
+      platform, 
+      amount, 
+      bossName, 
+      timeSpent, 
+      note: input,  // 日记式完整记录
+      complete, 
+      missingFields 
+    };
   }
 
   if (type === 'expense') {
     const category = detectCategory(input);
-    return { type, category, amount, timeSpent, note: description || input, complete: true, missingFields: [] };
+    return { 
+      type, 
+      category, 
+      amount, 
+      timeSpent, 
+      note: input,  // 日记式完整记录
+      complete: true, 
+      missingFields: [] 
+    };
   }
 
-  return { type: null, amount, complete: false, missingFields: ['type'] };
-}
-
-function extractDescription(input: string, amount: number): string | undefined {
-  // Find the first number in the string
-  const numStr = amount.toString();
-  const numIndex = input.indexOf(numStr);
-  if (numIndex === -1) return undefined;
-  
-  // Take the text before the number, clean it up
-  const beforeNum = input.slice(0, numIndex).trim();
-  // Remove common trailing words like "花了"/"支出"/"收入" etc.
-  const cleanDesc = beforeNum.replace(/(花了|支出|收入|到账|收到|转|买|消费|转出)$/g, '').trim();
-  return cleanDesc || undefined;
+  // 无法判断方向 → 标记为 incomplete，让用户在 SupplementForm 里选
+  return { 
+    type: null, 
+    amount, 
+    complete: false, 
+    missingFields: ['type'],
+    note: input
+  };
 }

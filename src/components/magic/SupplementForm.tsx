@@ -11,6 +11,7 @@ const PLATFORMS = ['比心', '微信', '抖音', '小红书', '建行', '招行'
 const EXPENSE_CATEGORIES = ['交通', '餐饮', '娱乐', '购物', '住房', '医疗', '通讯', '其他'];
 
 export function SupplementForm({ initial, onConfirm, onCancel }: SupplementFormProps) {
+  const [type, setType] = useState<'income' | 'expense' | null>(initial.type);
   const [platform, setPlatform] = useState(initial.platform || '');
   const [category, setCategory] = useState(initial.category || '');
   const [bossName, setBossName] = useState(initial.bossName || '');
@@ -19,6 +20,7 @@ export function SupplementForm({ initial, onConfirm, onCancel }: SupplementFormP
   function handleConfirm() {
     const result: ParseResult = {
       ...initial,
+      type: type!,
       platform: platform || undefined,
       category: category || initial.category,
       bossName: bossName || undefined,
@@ -55,7 +57,46 @@ export function SupplementForm({ initial, onConfirm, onCancel }: SupplementFormP
           补充信息
         </h3>
 
-        {initial.type === 'income' && (
+        {/* Type selector when direction is unclear */}
+        {(!initial.type || !type) && (
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '0.1em' }}>收支类型</label>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setType('income')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: `1.5px solid ${type === 'income' ? '#6b9fcf' : 'var(--border-subtle)'}`,
+                  background: type === 'income' ? 'rgba(107,159,207,0.1)' : 'transparent',
+                  color: type === 'income' ? '#6b9fcf' : 'var(--text-secondary)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                收入
+              </button>
+              <button
+                onClick={() => setType('expense')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: `1.5px solid ${type === 'expense' ? '#c9923a' : 'var(--border-subtle)'}`,
+                  background: type === 'expense' ? 'rgba(201,146,58,0.1)' : 'transparent',
+                  color: type === 'expense' ? '#c9923a' : 'var(--text-secondary)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                支出
+              </button>
+            </div>
+          </div>
+        )}
+
+        {(type === 'income') && (
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '0.1em' }}>平台</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -81,7 +122,7 @@ export function SupplementForm({ initial, onConfirm, onCancel }: SupplementFormP
           </div>
         )}
 
-        {initial.type === 'expense' && (
+        {(type === 'expense') && (
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '0.1em' }}>分类</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -128,7 +169,7 @@ export function SupplementForm({ initial, onConfirm, onCancel }: SupplementFormP
           />
         </div>
 
-        {initial.type === 'income' && (
+        {type === 'income' && (
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '0.1em' }}>老板名（可选）</label>
             <input
@@ -170,18 +211,18 @@ export function SupplementForm({ initial, onConfirm, onCancel }: SupplementFormP
           </button>
           <button
             onClick={handleConfirm}
-            disabled={(initial.type === 'income' && !platform) || !amount}
+            disabled={!type || (type === 'income' && !platform) || !amount}
             style={{
               flex: 1,
               padding: '14px',
               borderRadius: '12px',
               border: 'none',
-              background: (initial.type === 'income' && !platform) || !amount ? 'var(--border-subtle)' : 'var(--accent-blue)',
-              color: (initial.type === 'income' && !platform) || !amount ? 'var(--text-muted)' : '#0D0D10',
+              background: !type || (type === 'income' && !platform) || !amount ? 'var(--border-subtle)' : 'var(--accent-blue)',
+              color: !type || (type === 'income' && !platform) || !amount ? 'var(--text-muted)' : '#0D0D10',
               fontFamily: 'var(--font-body)',
               fontSize: '14px',
               fontWeight: 500,
-              cursor: (initial.type === 'income' && !platform) || !amount ? 'not-allowed' : 'pointer',
+              cursor: !type || (type === 'income' && !platform) || !amount ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s ease',
             }}
           >

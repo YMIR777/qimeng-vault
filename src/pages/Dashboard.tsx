@@ -13,7 +13,7 @@ function easeOut(t: number): number {
 }
 
 export function Dashboard() {
-  const { transactions, totalAsset, addTransaction } = useLedger();
+  const { transactions, totalAsset, addTransaction, updateTransaction } = useLedger();
   const { wishes, depositToWish } = useWishes();
   const { showToast } = useToast();
   const [displayNumber, setDisplayNumber] = useState(0);
@@ -23,6 +23,7 @@ export function Dashboard() {
   const [pendingIncomplete, setPendingIncomplete] = useState<ParseResult | null>(null);
   const [showWishPicker, setShowWishPicker] = useState(false);
   const [wishPickerAmount, setWishPickerAmount] = useState(0);
+  const [lastTxId, setLastTxId] = useState<string | null>(null);
 
   useEffect(() => {
     let start: number | null = null;
@@ -49,15 +50,16 @@ export function Dashboard() {
     if (result.type === 'income') {
       // For income with amount >= 20, offer to deposit to wish
       if (wishes.length > 0 && result.amount >= 20) {
-        await addTransaction({
+        const txId = await addTransaction({
           type: 'income',
           amount: result.amount,
           platform: result.platform || '未知',
           bossName: result.bossName,
           timeSpent: result.timeSpent,
-          note: result.note,
+          note: result.note || '',
           date: Date.now(),
         });
+        setLastTxId(txId);
         setWishPickerAmount(result.amount);
         setShowWishPicker(true);
       } else {
@@ -67,7 +69,7 @@ export function Dashboard() {
           platform: result.platform || '未知',
           bossName: result.bossName,
           timeSpent: result.timeSpent,
-          note: result.note,
+          note: result.note || '',
           date: Date.now(),
         });
         showToast(`+${result.amount} 元（${result.platform} 收入）`, 'success');
@@ -110,7 +112,7 @@ export function Dashboard() {
     setShowSupplement(false);
     if (!pendingIncomplete && !pendingExpense) return;
     const judgment = pendingIncomplete?.judgment;
-    await addTransaction({
+    const txId = await addTransaction({
       type: result.type!,
       amount: result.amount,
       category: result.category || '其他',
@@ -124,6 +126,7 @@ export function Dashboard() {
     const typeLabel = result.type === 'income' ? '收入' : '支出';
     // For income >= 20, offer wish deposit
     if (result.type === 'income' && wishes.length > 0 && result.amount >= 20) {
+      setLastTxId(txId);
       setWishPickerAmount(result.amount);
       setShowWishPicker(true);
       return;
@@ -292,7 +295,7 @@ export function Dashboard() {
           letterSpacing: '0.12em',
           color: '#b8af9e',
         }}>
-          按 Enter 记录 · 示例：比心 150 / 打车 30
+          像写日记一样记录 · 按 Enter 提交 · Shift+Enter 换行
         </p>
       </div>
 
@@ -498,11 +501,16 @@ export function Dashboard() {
           wishes={wishes}
           onDeposit={async (wishId: string, amount: number) => {
             await depositToWish(wishId, amount);
+            if (lastTxId) {
+              await updateTransaction(lastTxId, { wishId });
+            }
             showToast(`+${amount} 元存入星体`, 'success');
             setShowWishPicker(false);
+            setLastTxId(null);
           }}
           onClose={() => {
             setShowWishPicker(false);
+            setLastTxId(null);
           }}
         />
       )}
