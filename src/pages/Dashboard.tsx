@@ -47,19 +47,35 @@ export function Dashboard() {
       return;
     }
     if (result.type === 'income') {
-      await addTransaction({
-        type: 'income',
-        amount: result.amount,
-        platform: result.platform || '未知',
-        bossName: result.bossName,
-        timeSpent: result.timeSpent,
-        note: result.note,
-        date: Date.now(),
-      });
-      showToast(`+${result.amount} 元（${result.platform} 收入）`, 'success');
+      // For income with amount >= 20, offer to deposit to wish
+      if (wishes.length > 0 && result.amount >= 20) {
+        await addTransaction({
+          type: 'income',
+          amount: result.amount,
+          platform: result.platform || '未知',
+          bossName: result.bossName,
+          timeSpent: result.timeSpent,
+          note: result.note,
+          date: Date.now(),
+        });
+        setWishPickerAmount(result.amount);
+        setShowWishPicker(true);
+      } else {
+        await addTransaction({
+          type: 'income',
+          amount: result.amount,
+          platform: result.platform || '未知',
+          bossName: result.bossName,
+          timeSpent: result.timeSpent,
+          note: result.note,
+          date: Date.now(),
+        });
+        showToast(`+${result.amount} 元（${result.platform} 收入）`, 'success');
+      }
       return;
     }
     if (result.type === 'expense') {
+      // For expense, skip wish picker entirely — money already left
       setPendingExpense(result);
       setShowDecision(true);
       return;
@@ -69,27 +85,11 @@ export function Dashboard() {
   async function handleExpenseConfirm(judgment: 'worthy' | 'unworthy') {
     if (!pendingExpense) return;
     setShowDecision(false);
-    // For worthy expenses, ask if user wants to deposit to a wish
-    if (judgment === 'worthy' && wishes.length > 0) {
-      // First add the transaction, then show wish picker
-      const txData = {
-        type: 'expense' as const,
-        amount: pendingExpense.amount,
-        category: pendingExpense.category || '其他',
-        platform: pendingExpense.platform,
-        bossName: pendingExpense.bossName,
-        judgment: 'worthy' as const,
-        timeSpent: pendingExpense.timeSpent,
-        note: pendingExpense.note,
-        date: Date.now(),
-      };
-      await addTransaction(txData);
-      setWishPickerAmount(pendingExpense.amount);
-      setShowWishPicker(true);
-      return;
-    }
-    // For unworthy or no wishes, go straight to supplement (or skip if complete)
-    if (pendingExpense.complete) {
+    // Worthy judgment is just a label — no deposit from expenses
+    if (!pendingExpense.complete) {
+      setPendingIncomplete({ ...pendingExpense, judgment });
+      setShowSupplement(true);
+    } else {
       await addTransaction({
         type: 'expense',
         amount: pendingExpense.amount,
@@ -103,9 +103,6 @@ export function Dashboard() {
       });
       showToast(`${pendingExpense.amount} 元（支出）· ${judgment === 'worthy' ? '值得' : '不值'}`, 'success');
       setPendingExpense(null);
-    } else {
-      setPendingIncomplete({ ...pendingExpense, judgment });
-      setShowSupplement(true);
     }
   }
 
@@ -125,6 +122,12 @@ export function Dashboard() {
       date: Date.now(),
     });
     const typeLabel = result.type === 'income' ? '收入' : '支出';
+    // For income >= 20, offer wish deposit
+    if (result.type === 'income' && wishes.length > 0 && result.amount >= 20) {
+      setWishPickerAmount(result.amount);
+      setShowWishPicker(true);
+      return;
+    }
     const judgmentLabel = judgment ? (judgment === 'worthy' ? '· 值得' : '· 不值') : '';
     showToast(`${result.amount} 元（${typeLabel}）${judgmentLabel}`, 'success');
     setPendingExpense(null);
@@ -468,16 +471,11 @@ export function Dashboard() {
           wishes={wishes}
           onDeposit={async (wishId: string, amount: number) => {
             await depositToWish(wishId, amount);
-            showToast(`存入 ¥${amount} 到星体`, 'success');
+            showToast(`+${amount} 元存入星体`, 'success');
             setShowWishPicker(false);
-            setPendingExpense(null);
-            setPendingIncomplete(null);
           }}
           onClose={() => {
             setShowWishPicker(false);
-            showToast(`${wishPickerAmount} 元（支出）· 值得`, 'success');
-            setPendingExpense(null);
-            setPendingIncomplete(null);
           }}
         />
       )}
