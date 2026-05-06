@@ -27,5 +27,9 @@ export function useLedger() {
     setTransactions(all);
   };
 
-  return { transactions, totalAsset, addTransaction };
+  const getTransactionsByWish = async (wishId: string) => {
+    return await db.transactions.where('wishId').equals(wishId).toArray();
+  };
+
+  return { transactions, totalAsset, addTransaction, getTransactionsByWish };
 }

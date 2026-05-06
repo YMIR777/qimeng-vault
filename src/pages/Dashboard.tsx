@@ -134,7 +134,7 @@ export function Dashboard() {
     setPendingIncomplete(null);
   }
 
-  const recentTx = [...transactions].reverse().slice(0, 3);
+  const recentTx = [...transactions].reverse().slice(0, 10);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTx = transactions.filter(t => t.date >= today.getTime());
@@ -400,14 +400,15 @@ export function Dashboard() {
         {recentTx.length === 0 ? (
           <div style={{
             textAlign: 'center',
-            padding: '32px 0',
+            padding: '36px 24px',
             color: '#c5bdb0',
-            fontSize: '13px',
             background: '#f0ebe0',
             borderRadius: '16px',
             boxShadow: 'inset 4px 4px 8px #cdc5b8, inset -4px -4px 8px #fffbf5',
           }}>
-            暂无记录，开始记账吧
+            <div style={{ fontSize: '32px', marginBottom: '12px' }}>📒</div>
+            <div style={{ fontSize: '14px', marginBottom: '6px', color: '#a89f8e' }}>暂无记账记录</div>
+            <div style={{ fontSize: '12px', color: '#c5bdb0' }}>尝试输入「比心 150」或「打车 30」</div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

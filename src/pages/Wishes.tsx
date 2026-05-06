@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useWishes } from '../store/useWishes';
+import { useLedger } from '../store/useLedger';
 import { WishBottle } from '../components/wishes/WishBottle';
+import { WishDetail } from '../components/wishes/WishDetail';
 
 // ── Design Tokens (Cream Neumorphism) ──────────────────────────────
 const css = {
@@ -178,8 +180,11 @@ const AddButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 
 // ── Wishes Page ───────────────────────────────────────────────────
 export function Wishes() {
-  const { wishes, addWish } = useWishes();
+  const { wishes, addWish, depositToWish, withdrawFromWish, deleteWish } = useWishes();
+  const { getTransactionsByWish } = useLedger();
   const [showModal, setShowModal] = useState(false);
+  const [selectedWish, setSelectedWish] = useState(null as any);
+  const [wishTransactions, setWishTransactions] = useState([] as any[]);
 
   const handleAddWish = async (data: { name: string; targetPrice: number }) => {
     await addWish(data);
@@ -238,6 +243,10 @@ export function Wishes() {
                   currentBalance={wish.currentBalance}
                   targetPrice={wish.targetPrice}
                   status={wish.status}
+                  onClick={() => {
+                    setSelectedWish(wish);
+                    getTransactionsByWish(wish.id).then(setWishTransactions);
+                  }}
                 />
               </div>
             );
@@ -250,6 +259,37 @@ export function Wishes() {
         <AddWishModal
           onConfirm={handleAddWish}
           onCancel={() => setShowModal(false)}
+        />
+      )}
+
+      {/* Wish Detail panel */}
+      {selectedWish && (
+        <WishDetail
+          wish={selectedWish}
+          transactions={wishTransactions}
+          onDeposit={async (amount: number) => {
+            await depositToWish(selectedWish.id, amount);
+            const updatedWish = { ...selectedWish, currentBalance: selectedWish.currentBalance + amount };
+            setSelectedWish(updatedWish);
+            const txs = await getTransactionsByWish(selectedWish.id);
+            setWishTransactions(txs);
+          }}
+          onWithdraw={async (amount: number) => {
+            await withdrawFromWish(selectedWish.id, amount);
+            const updatedWish = { ...selectedWish, currentBalance: Math.max(0, selectedWish.currentBalance - amount) };
+            setSelectedWish(updatedWish);
+            const txs = await getTransactionsByWish(selectedWish.id);
+            setWishTransactions(txs);
+          }}
+          onDelete={async () => {
+            await deleteWish(selectedWish.id);
+            setSelectedWish(null);
+            setWishTransactions([]);
+          }}
+          onClose={() => {
+            setSelectedWish(null);
+            setWishTransactions([]);
+          }}
         />
       )}
     </div>

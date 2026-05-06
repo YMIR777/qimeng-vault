@@ -7,6 +7,7 @@ interface WishBottleProps {
   currentBalance: number;
   targetPrice: number;
   status: WishStatus;
+  onClick?: () => void;
 }
 
 const STATUS_COLORS = {
@@ -20,6 +21,7 @@ export const WishBottle: React.FC<WishBottleProps> = ({
   currentBalance,
   targetPrice,
   status,
+  onClick,
 }) => {
   const fillColor = STATUS_COLORS[status];
   const percentage = Math.min((currentBalance / targetPrice) * 100, 100);
@@ -64,6 +66,7 @@ export const WishBottle: React.FC<WishBottleProps> = ({
       onMouseUp={(e) => {
         (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.02)';
       }}
+      onClick={onClick}
     >
       <svg
         width={svgWidth}
