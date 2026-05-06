@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Wishes } from './pages/Wishes';
 import { Workbench } from './pages/Workbench';
 import { Reports } from './pages/Reports';
+import { Records } from './pages/Records';
 import './styles/global.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
               <Route path="/wishes" element={<Wishes />} />
               <Route path="/workbench" element={<Workbench />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/records" element={<Records />} />
             </Routes>
           </div>
           <TabBar />

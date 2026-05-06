@@ -93,10 +93,10 @@ describe('WishPicker', () => {
       />
     );
     await act(async () => { vi.advanceTimersByTime(200); });
-    // Verify the first wish shows progress info
-    const all3100 = screen.getAllByText('¥3,100 / ¥5,000');
+    // Verify the first wish shows current balance (not post-deposit)
+    const all3100 = screen.getAllByText('¥3,000 / ¥5,000');
     expect(all3100.length).toBeGreaterThan(0);
-    expect(screen.getAllByText('¥100 / ¥800').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('¥0 / ¥800').length).toBeGreaterThan(0);
   });
 
   it('calls onClose when "不存入" is clicked', async () => {

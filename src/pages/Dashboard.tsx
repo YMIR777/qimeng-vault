@@ -134,7 +134,9 @@ export function Dashboard() {
     setPendingIncomplete(null);
   }
 
-  const recentTx = [...transactions].reverse().slice(0, 10);
+  const recentTx = [...transactions]
+    .sort((a, b) => b.date - a.date)
+    .slice(0, 10);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTx = transactions.filter(t => t.date >= today.getTime());
@@ -384,19 +386,31 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Transactions */}
+      {/* Recent Transactions — 固定高度容器 + 内部滚动 */}
       <div>
-        <h3 style={{
-          fontFamily: "'Noto Sans SC', sans-serif",
-          fontSize: '10px',
-          letterSpacing: '0.22em',
-          color: '#b8af9e',
-          textTransform: 'uppercase',
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
           marginBottom: '14px',
           paddingLeft: '4px',
         }}>
-          最近记录
-        </h3>
+          <h3 style={{
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '10px',
+            letterSpacing: '0.22em',
+            color: '#b8af9e',
+            textTransform: 'uppercase',
+          }}>
+            最近记录
+          </h3>
+          <a href="/records" style={{
+            fontSize: '10px',
+            color: '#a89f8e',
+            textDecoration: 'none',
+            letterSpacing: '0.08em',
+          }}>查看全部 →</a>
+        </div>
         {recentTx.length === 0 ? (
           <div style={{
             textAlign: 'center',
@@ -406,12 +420,18 @@ export function Dashboard() {
             borderRadius: '16px',
             boxShadow: 'inset 4px 4px 8px #cdc5b8, inset -4px -4px 8px #fffbf5',
           }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>📒</div>
             <div style={{ fontSize: '14px', marginBottom: '6px', color: '#a89f8e' }}>暂无记账记录</div>
             <div style={{ fontSize: '12px', color: '#c5bdb0' }}>尝试输入「比心 150」或「打车 30」</div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{
+            maxHeight: '320px',
+            overflowY: 'auto',
+            padding: '4px 2px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}>
             {recentTx.map(tx => (
               <div key={tx.id} style={{
                 display: 'flex',
@@ -421,18 +441,24 @@ export function Dashboard() {
                 background: '#f0ebe0',
                 borderRadius: '14px',
                 boxShadow: 'inset 3px 3px 6px #cdc5b8, inset -3px -3px 6px #fffbf5',
+                flexShrink: 0,
               }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, overflow: 'hidden' }}>
                   <span style={{
                     fontFamily: "'Noto Sans SC', sans-serif",
                     fontSize: '13px',
                     color: '#3d3427',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}>
-                    {tx.platform || tx.category}
+                    {tx.note || tx.platform || tx.category || '未分类'}
                   </span>
-                  <span style={{ fontSize: '10px', color: '#a89f8e' }}>
-                    {new Date(tx.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
-                    {tx.bossName ? ` · ${tx.bossName}` : ''}
+                  <span style={{ fontSize: '10px', color: '#a89f8e', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <span>{new Date(tx.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span>
+                    {tx.category && <span style={{ padding: '1px 6px', background: '#e8e1d5', borderRadius: '4px', fontSize: '9px' }}>{tx.category}</span>}
+                    {tx.platform && <span style={{ padding: '1px 6px', background: '#e8e1d5', borderRadius: '4px', fontSize: '9px' }}>{tx.platform}</span>}
+                    {tx.bossName ? <span>· {tx.bossName}</span> : ''}
                   </span>
                 </div>
                 <div style={{
