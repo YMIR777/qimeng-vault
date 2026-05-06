@@ -1,10 +1,11 @@
-import Dexie, { Table } from 'dexie';
+import Dexie from 'dexie';
+import type { Table } from 'dexie';
 
 export interface Transaction {
   id: string;
   type: 'income' | 'expense';
   amount: number;
-  category: string;
+  category?: string;  // used for expenses, platforms for income
   platform?: string;
   bossName?: string;
   judgment?: 'worthy' | 'unworthy';

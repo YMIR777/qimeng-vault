@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ParseResult } from './parseInput';
+import type { ParseResult } from './parseInput';
 
 interface SupplementFormProps {
   initial: ParseResult;
@@ -50,7 +50,7 @@ export function SupplementForm({ initial, onConfirm, onCancel }: SupplementFormP
         animation: 'slideUp 0.3s var(--ease-out)',
       }}>
         <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
-        
+
         <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '18px', fontWeight: 400, marginBottom: '20px', textAlign: 'center' }}>
           补充信息
         </h3>

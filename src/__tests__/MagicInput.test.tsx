@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { render, fireEvent, within } from '@testing-library/react';
 import { MagicInput } from '../components/magic/MagicInput';
-import { ParseResult } from '../components/magic/parseInput';
+import type { ParseResult } from '../components/magic/parseInput';
 
 describe('MagicInput', () => {
   it('renders input field', () => {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { parseInput, ParseResult } from './parseInput';
+import { parseInput } from './parseInput';
+import type { ParseResult } from './parseInput';
 
 interface MagicInputProps {
   onSubmit: (result: ParseResult) => void;
@@ -18,9 +19,7 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
   }
 
   return (
-    <div style={{
-      position: 'relative',
-    }}>
+    <div style={{ position: 'relative' }}>
       <div style={{
         borderRadius: '16px',
         border: `1.5px solid ${focused ? 'var(--accent-blue)' : 'var(--border-subtle)'}`,

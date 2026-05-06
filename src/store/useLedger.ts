@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { db, Transaction } from './db';
+import { db } from './db';
+import type { Transaction } from './db';
 
 export function useLedger() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);

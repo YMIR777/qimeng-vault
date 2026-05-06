@@ -4,6 +4,7 @@ export interface ParseResult {
   category?: string;
   amount: number;
   bossName?: string;
+  judgment?: 'worthy' | 'unworthy';
   timeSpent?: number;
   note?: string;
   complete: boolean;
