@@ -1,24 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap');
+
 /* ─── CSS Variables ─── */
 :root {
   /* Dark mode (default) */
-  --bg-primary: #0a0a0b;
-  --bg-secondary: #111113;
-  --bg-card: rgba(18, 18, 20, 0.72);
-  --text-primary: #f0ece4;
-  --text-secondary: #9a9490;
-  --text-muted: #5a5652;
-  --accent-blue: #4fc3f7;
-  --accent-gold: #ffd663;
-  --accent-blue-dim: rgba(79, 195, 247, 0.18);
-  --accent-gold-dim: rgba(255, 214, 99, 0.14);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-glow: rgba(79, 195, 247, 0.3);
-  --glass-bg: rgba(12, 12, 14, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --bg-primary: #0D0D10;
+  --bg-secondary: #161619;
+  --bg-card: #161619;
+  --text-primary: #EEE8DC;
+  --text-secondary: #7A756E;
+  --text-muted: #5A5652;
+  --accent-blue: #4FC3F7;
+  --accent-gold: #E8B84B;
+  --accent-blue-dim: rgba(79, 195, 247, 0.15);
+  --accent-gold-dim: rgba(232, 184, 75, 0.15);
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --glass-bg: rgba(22, 22, 25, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --success: #6DBF82;
+  --danger: #D97373;
 
   /* Typography */
-  --font-display: 'HYShuSong-S2S', 'STSong', 'SimSun', serif;
-  --font-body: 'Noto Serif SC', 'STSong', serif;
+  --font-display: 'Noto Serif SC', serif;
+  --font-body: 'Noto Sans SC', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* Spacing */
@@ -39,24 +42,6 @@
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-full: 9999px;
-}
-
-/* ─── Light mode ─── */
-[data-theme='light'] {
-  --bg-primary: #f5f2ed;
-  --bg-secondary: #ede9e2;
-  --bg-card: rgba(240, 236, 228, 0.82);
-  --text-primary: #2a2520;
-  --text-secondary: #7a7068;
-  --text-muted: #a09890;
-  --accent-blue: #2b7a9e;
-  --accent-gold: #b8860b;
-  --accent-blue-dim: rgba(43, 122, 158, 0.12);
-  --accent-gold-dim: rgba(184, 134, 11, 0.10);
-  --border-subtle: rgba(0, 0, 0, 0.07);
-  --border-glow: rgba(184, 134, 11, 0.25);
-  --glass-bg: rgba(235, 230, 222, 0.80);
-  --glass-border: rgba(0, 0, 0, 0.08);
 }
 
 /* ─── Reset ─── */

@@ -1,9 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
-import { ParticleCanvas } from './components/particles';
+import { useState, useEffect } from 'react';
 import './styles/global.css';
 
 function App() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [displayNumber, setDisplayNumber] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
@@ -34,21 +32,15 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
-  }, []);
-
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' && inputValue.trim()) {
       setInputValue('');
     }
   }
 
-  const isLight = theme === 'light';
-
   return (
     <div
-      data-theme={theme}
+      data-theme="dark"
       style={{
         position: 'relative',
         minHeight: '100dvh',
@@ -56,23 +48,6 @@ function App() {
         transition: 'background 0.6s var(--ease-in-out)',
       }}
     >
-      {/* Particle Background */}
-      <ParticleCanvas count={320} repelStrength={32} gravity={28} />
-
-      {/* Radial depth overlay — dark only */}
-      {!isLight && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1,
-            background:
-              'radial-gradient(ellipse at 50% 50%, transparent 28%, rgba(4,4,6,0.58) 100%)',
-            pointerEvents: 'none',
-          }}
-        />
-      )}
-
       {/* Main Content */}
       <div
         style={{
@@ -108,128 +83,6 @@ function App() {
           >
             绮梦账间
           </h1>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            {/* Lab Icon */}
-            <button
-              aria-label="粒子实验室"
-              title="粒子实验室"
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: '50%',
-                border: '1px solid var(--border-subtle)',
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(14px)',
-                WebkitBackdropFilter: 'blur(14px)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition:
-                  'border-color 0.25s ease, transform 0.2s var(--ease-spring)',
-              }}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.borderColor = 'var(--accent-blue)';
-                btn.style.transform = 'scale(1.1)';
-              }}
-              onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.borderColor = 'var(--border-subtle)';
-                btn.style.transform = 'scale(1)';
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="8" cy="10.5" r="2.2" stroke="var(--accent-gold)" strokeWidth="1.1" />
-                <path
-                  d="M8 8.3V5.5M6.8 4.6L8 2.5L9.2 4.6"
-                  stroke="var(--accent-gold)"
-                  strokeWidth="1.1"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="4.2" cy="4.5" r="1" fill="var(--accent-blue)" opacity="0.65" />
-                <circle cx="12" cy="5.5" r="0.75" fill="var(--accent-gold)" opacity="0.75" />
-                <circle cx="2.8" cy="8" r="0.55" fill="var(--accent-blue)" opacity="0.45" />
-                <circle cx="13.5" cy="8.5" r="0.5" fill="var(--accent-blue)" opacity="0.35" />
-              </svg>
-            </button>
-
-            {/* Day/Night Toggle */}
-            <button
-              onClick={toggleTheme}
-              aria-label={`切换到${isLight ? '深夜' : '暖白'}模式`}
-              style={{
-                width: 54,
-                height: 28,
-                borderRadius: 'var(--radius-full)',
-                border: '1px solid var(--border-subtle)',
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(14px)',
-                WebkitBackdropFilter: 'blur(14px)',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-                transition: 'border-color 0.3s ease',
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 2,
-                  borderRadius: 'var(--radius-full)',
-                  background: isLight
-                    ? 'rgba(255,214,99,0.18)'
-                    : 'rgba(79,195,247,0.07)',
-                  transition: 'background 0.45s ease',
-                }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 3,
-                  left: isLight ? 28 : 3,
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  background: isLight ? 'var(--accent-gold)' : 'var(--accent-blue)',
-                  boxShadow: isLight
-                    ? '0 0 10px rgba(255,214,99,0.55)'
-                    : '0 0 10px rgba(79,195,247,0.5)',
-                  transition:
-                    'left 0.38s var(--ease-spring), background 0.45s ease, box-shadow 0.45s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {isLight ? (
-                  // Sun
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                    <circle cx="5" cy="5" r="2.2" fill="#7a4f00" />
-                    {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => (
-                      <line
-                        key={i}
-                        x1="5" y1="1.2" x2="5" y2="0.3"
-                        stroke="#7a4f00" strokeWidth="1.3" strokeLinecap="round"
-                        transform={`rotate(${deg} 5 5)`}
-                      />
-                    ))}
-                  </svg>
-                ) : (
-                  // Moon
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                    <path
-                      d="M5 1.8a3.2 3.2 0 1 0 3.2 5.2A4.5 4.5 0 0 1 5 1.8z"
-                      fill="#0a2a40"
-                    />
-                  </svg>
-                )}
-              </div>
-            </button>
-          </div>
         </header>
 
         {/* Center Stage */}
@@ -263,10 +116,7 @@ function App() {
                 letterSpacing: '-0.025em',
                 color: 'var(--text-primary)',
                 lineHeight: 1,
-                textShadow: isLight
-                  ? 'none'
-                  : '0 0 48px rgba(79,195,247,0.12), 0 0 96px rgba(79,195,247,0.05)',
-                transition: 'text-shadow 0.6s ease',
+                textShadow: 'none',
                 userSelect: 'none',
               }}
             >
@@ -307,9 +157,7 @@ function App() {
                 padding: '3px',
                 borderRadius: 'var(--radius-lg)',
                 boxShadow: inputFocused
-                  ? isLight
-                    ? '0 0 0 1.5px var(--accent-gold), 0 6px 36px rgba(184,134,11,0.1)'
-                    : '0 0 0 1.5px var(--accent-blue), 0 6px 36px rgba(79,195,247,0.13)'
+                  ? '0 0 0 1.5px var(--accent-blue), 0 6px 36px rgba(79,195,247,0.13)'
                   : 'none',
                 transition: 'box-shadow 0.35s ease',
               }}
@@ -352,7 +200,7 @@ function App() {
           </div>
         </main>
 
-        {/* Footer hint */}
+        {/* Footer */}
         <footer
           style={{
             padding: '24px',
@@ -365,7 +213,7 @@ function App() {
             textTransform: 'uppercase',
           }}
         >
-          Move cursor to disturb particles
+          绮梦账间
         </footer>
       </div>
     </div>
