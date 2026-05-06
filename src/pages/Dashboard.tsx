@@ -250,41 +250,52 @@ export function Dashboard() {
         </p>
       </div>
 
-      {/* Quick Stats */}
+      {/* Quick Stats — Asymmetric Bento Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr 1fr',
+        gridTemplateColumns: '2fr 1fr 1fr',
         gap: '10px',
         marginBottom: '32px',
+        alignItems: 'stretch',
       }}>
+        {/* 今日收入 — wider, taller */}
         <div style={{
           background: '#f0ebe0',
-          borderRadius: '16px',
-          padding: '16px 10px',
+          borderRadius: '18px',
+          padding: '20px 16px 18px',
           textAlign: 'center',
           boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          minHeight: '90px',
         }}>
           <div style={{
             fontFamily: "'Noto Serif SC', serif",
-            fontSize: '20px',
+            fontSize: '24px',
             color: '#6b9fcf',
             letterSpacing: '-0.02em',
+            lineHeight: 1.1,
           }}>
             +{todayIncome.toFixed(0)}
           </div>
           <div style={{
             fontSize: '9px',
             color: '#b8af9e',
-            marginTop: '6px',
-            letterSpacing: '0.12em',
+            marginTop: '8px',
+            letterSpacing: '0.14em',
           }}>今日收入</div>
         </div>
+        {/* 今日支出 */}
         <div style={{
           background: '#f0ebe0',
-          borderRadius: '16px',
-          padding: '16px 10px',
+          borderRadius: '18px',
+          padding: '18px 12px',
           textAlign: 'center',
           boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
         }}>
           <div style={{
             fontFamily: "'Noto Serif SC', serif",
@@ -301,12 +312,16 @@ export function Dashboard() {
             letterSpacing: '0.12em',
           }}>今日支出</div>
         </div>
+        {/* 总记录 */}
         <div style={{
           background: '#f0ebe0',
-          borderRadius: '16px',
-          padding: '16px 10px',
+          borderRadius: '18px',
+          padding: '18px 12px',
           textAlign: 'center',
           boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
         }}>
           <div style={{
             fontFamily: "'Noto Serif SC', serif",
