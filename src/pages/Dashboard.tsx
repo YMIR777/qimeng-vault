@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useLedger } from '../store/useLedger';
+import { useWishes } from '../store/useWishes';
 import type { ParseResult } from '../components/magic/parseInput';
 import { MagicInput } from '../components/magic/MagicInput';
 import { ExpenseDecision } from '../components/magic/ExpenseDecision';
 import { SupplementForm } from '../components/magic/SupplementForm';
+import { WishPicker } from '../components/wishes/WishPicker';
 import { useToast } from '../components/ui/Toast';
 
 function easeOut(t: number): number {
@@ -12,12 +14,15 @@ function easeOut(t: number): number {
 
 export function Dashboard() {
   const { transactions, totalAsset, addTransaction } = useLedger();
+  const { wishes, depositToWish } = useWishes();
   const { showToast } = useToast();
   const [displayNumber, setDisplayNumber] = useState(0);
   const [showDecision, setShowDecision] = useState(false);
   const [pendingExpense, setPendingExpense] = useState<ParseResult | null>(null);
   const [showSupplement, setShowSupplement] = useState(false);
   const [pendingIncomplete, setPendingIncomplete] = useState<ParseResult | null>(null);
+  const [showWishPicker, setShowWishPicker] = useState(false);
+  const [wishPickerAmount, setWishPickerAmount] = useState(0);
 
   useEffect(() => {
     let start: number | null = null;
@@ -64,8 +69,44 @@ export function Dashboard() {
   async function handleExpenseConfirm(judgment: 'worthy' | 'unworthy') {
     if (!pendingExpense) return;
     setShowDecision(false);
-    setPendingIncomplete({ ...pendingExpense, judgment });
-    setShowSupplement(true);
+    // For worthy expenses, ask if user wants to deposit to a wish
+    if (judgment === 'worthy' && wishes.length > 0) {
+      // First add the transaction, then show wish picker
+      const txData = {
+        type: 'expense' as const,
+        amount: pendingExpense.amount,
+        category: pendingExpense.category || '其他',
+        platform: pendingExpense.platform,
+        bossName: pendingExpense.bossName,
+        judgment: 'worthy' as const,
+        timeSpent: pendingExpense.timeSpent,
+        note: pendingExpense.note,
+        date: Date.now(),
+      };
+      await addTransaction(txData);
+      setWishPickerAmount(pendingExpense.amount);
+      setShowWishPicker(true);
+      return;
+    }
+    // For unworthy or no wishes, go straight to supplement (or skip if complete)
+    if (pendingExpense.complete) {
+      await addTransaction({
+        type: 'expense',
+        amount: pendingExpense.amount,
+        category: pendingExpense.category || '其他',
+        platform: pendingExpense.platform,
+        bossName: pendingExpense.bossName,
+        judgment,
+        timeSpent: pendingExpense.timeSpent,
+        note: pendingExpense.note,
+        date: Date.now(),
+      });
+      showToast(`${pendingExpense.amount} 元（支出）· ${judgment === 'worthy' ? '值得' : '不值'}`, 'success');
+      setPendingExpense(null);
+    } else {
+      setPendingIncomplete({ ...pendingExpense, judgment });
+      setShowSupplement(true);
+    }
   }
 
   async function handleSupplementConfirm(result: ParseResult) {
@@ -418,6 +459,26 @@ export function Dashboard() {
           initial={pendingIncomplete}
           onConfirm={handleSupplementConfirm}
           onCancel={() => { setShowSupplement(false); setPendingIncomplete(null); setPendingExpense(null); }}
+        />
+      )}
+
+      {showWishPicker && (
+        <WishPicker
+          amount={wishPickerAmount}
+          wishes={wishes}
+          onDeposit={async (wishId: string, amount: number) => {
+            await depositToWish(wishId, amount);
+            showToast(`存入 ¥${amount} 到星体`, 'success');
+            setShowWishPicker(false);
+            setPendingExpense(null);
+            setPendingIncomplete(null);
+          }}
+          onClose={() => {
+            setShowWishPicker(false);
+            showToast(`${wishPickerAmount} 元（支出）· 值得`, 'success');
+            setPendingExpense(null);
+            setPendingIncomplete(null);
+          }}
         />
       )}
     </div>
