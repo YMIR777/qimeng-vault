@@ -6,6 +6,7 @@ import { Wishes } from './pages/Wishes';
 import { Workbench } from './pages/Workbench';
 import { Reports } from './pages/Reports';
 import { Records } from './pages/Records';
+import { Reflection } from './pages/Reflection';
 import './styles/global.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/wishes" element={<Wishes />} />
               <Route path="/workbench" element={<Workbench />} />
+              <Route path="/reflection" element={<Reflection />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/records" element={<Records />} />
             </Routes>

@@ -34,6 +34,16 @@ const tabs = [
     ),
   },
   {
+    path: '/reflection',
+    label: '反思',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+        <path d="M10 6v5l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
     path: '/reports',
     label: '报表',
     icon: (
@@ -57,14 +67,14 @@ export function TabBar() {
         left: 0,
         right: 0,
         zIndex: 50,
-        padding: '10px 20px 12px',
+        padding: '10px 16px 12px',
         paddingBottom: 'max(14px, env(safe-area-inset-bottom))',
         background: '#f5f0e8',
         boxShadow: '0 -6px 24px rgba(163, 158, 148, 0.35), inset 0 1px 0 rgba(255,251,245,0.8)',
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
-        gap: '4px',
+        gap: '2px',
       }}
     >
       {tabs.map((tab) => {
@@ -78,10 +88,10 @@ export function TabBar() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '5px',
-              padding: '12px 8px 8px',
+              gap: '4px',
+              padding: '10px 4px 6px',
               textDecoration: 'none',
-              borderRadius: '16px',
+              borderRadius: '14px',
               background: active ? '#ece7dc' : 'transparent',
               boxShadow: active
                 ? 'inset 4px 4px 8px #c8c0b2, inset -4px -4px 8px #fffbf5'
@@ -106,7 +116,7 @@ export function TabBar() {
             {tab.icon}
             <span style={{
               fontFamily: "'Noto Sans SC', sans-serif",
-              fontSize: '10px',
+              fontSize: '9px',
               letterSpacing: '0.06em',
               fontWeight: active ? 500 : 400,
             }}>
