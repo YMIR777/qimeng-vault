@@ -19,7 +19,6 @@ export function Dashboard() {
   const [showSupplement, setShowSupplement] = useState(false);
   const [pendingIncomplete, setPendingIncomplete] = useState<ParseResult | null>(null);
 
-  // Animate total asset number
   useEffect(() => {
     let start: number | null = null;
     const duration = 1200;
@@ -116,7 +115,7 @@ export function Dashboard() {
           fontFamily: "'Noto Sans SC', sans-serif",
           fontSize: '12px',
           letterSpacing: '0.3em',
-          color: '#a0aec0',
+          color: '#a89f8e',
           textTransform: 'uppercase',
           marginBottom: '10px',
         }}>
@@ -127,7 +126,7 @@ export function Dashboard() {
           fontSize: 'clamp(48px, 12vw, 88px)',
           fontWeight: 400,
           letterSpacing: '-0.025em',
-          color: '#2d3748',
+          color: '#3d3427',
           lineHeight: 1,
         }}>
           ¥{displayNumber.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -136,7 +135,7 @@ export function Dashboard() {
           marginTop: '10px',
           fontSize: '10px',
           letterSpacing: '0.3em',
-          color: '#a0aec0',
+          color: '#a89f8e',
           textTransform: 'uppercase',
         }}>
           总资产
@@ -151,7 +150,7 @@ export function Dashboard() {
           marginTop: '10px',
           fontSize: '10px',
           letterSpacing: '0.14em',
-          color: '#a0aec0',
+          color: '#a89f8e',
         }}>
           按 Enter 记录 · 示例：比心 150 / 打车 30
         </p>
@@ -165,67 +164,67 @@ export function Dashboard() {
         marginBottom: '32px',
       }}>
         <div style={{
-          background: '#e8edf2',
+          background: '#f0ebe0',
           borderRadius: '18px',
           padding: '18px 12px',
           textAlign: 'center',
-          boxShadow: '5px 5px 10px #b8c0cc, -5px -5px 10px #ffffff',
+          boxShadow: '5px 5px 10px #cdc5b8, -5px -5px 10px #fffbf5',
         }}>
           <div style={{
             fontFamily: "'Noto Serif SC', serif",
             fontSize: '22px',
-            color: '#5a9fd4',
+            color: '#6b9fcf',
             letterSpacing: '-0.02em',
           }}>
             +{todayIncome.toFixed(0)}
           </div>
           <div style={{
             fontSize: '10px',
-            color: '#a0aec0',
+            color: '#a89f8e',
             marginTop: '5px',
             letterSpacing: '0.1em',
           }}>今日收入</div>
         </div>
         <div style={{
-          background: '#e8edf2',
+          background: '#f0ebe0',
           borderRadius: '18px',
           padding: '18px 12px',
           textAlign: 'center',
-          boxShadow: '5px 5px 10px #b8c0cc, -5px -5px 10px #ffffff',
+          boxShadow: '5px 5px 10px #cdc5b8, -5px -5px 10px #fffbf5',
         }}>
           <div style={{
             fontFamily: "'Noto Serif SC', serif",
             fontSize: '22px',
-            color: '#d4a843',
+            color: '#c9923a',
             letterSpacing: '-0.02em',
           }}>
             -{todayExpense.toFixed(0)}
           </div>
           <div style={{
             fontSize: '10px',
-            color: '#a0aec0',
+            color: '#a89f8e',
             marginTop: '5px',
             letterSpacing: '0.1em',
           }}>今日支出</div>
         </div>
         <div style={{
-          background: '#e8edf2',
+          background: '#f0ebe0',
           borderRadius: '18px',
           padding: '18px 12px',
           textAlign: 'center',
-          boxShadow: '5px 5px 10px #b8c0cc, -5px -5px 10px #ffffff',
+          boxShadow: '5px 5px 10px #cdc5b8, -5px -5px 10px #fffbf5',
         }}>
           <div style={{
             fontFamily: "'Noto Serif SC', serif",
             fontSize: '22px',
-            color: '#2d3748',
+            color: '#3d3427',
             letterSpacing: '-0.02em',
           }}>
             {transactions.length}
           </div>
           <div style={{
             fontSize: '10px',
-            color: '#a0aec0',
+            color: '#a89f8e',
             marginTop: '5px',
             letterSpacing: '0.1em',
           }}>总记录</div>
@@ -238,7 +237,7 @@ export function Dashboard() {
           fontFamily: "'Noto Sans SC', sans-serif",
           fontSize: '10px',
           letterSpacing: '0.2em',
-          color: '#a0aec0',
+          color: '#a89f8e',
           textTransform: 'uppercase',
           marginBottom: '14px',
         }}>
@@ -248,7 +247,7 @@ export function Dashboard() {
           <div style={{
             textAlign: 'center',
             padding: '32px 0',
-            color: '#c0c8d4',
+            color: '#c5beb2',
             fontSize: '13px',
           }}>
             暂无记录，开始记账吧
@@ -261,19 +260,19 @@ export function Dashboard() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '16px 18px',
-                background: '#e8edf2',
+                background: '#f0ebe0',
                 borderRadius: '14px',
-                boxShadow: 'inset 3px 3px 6px #b8c0cc, inset -3px -3px 6px #ffffff',
+                boxShadow: 'inset 3px 3px 6px #cdc5b8, inset -3px -3px 6px #fffbf5',
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <span style={{
                     fontFamily: "'Noto Sans SC', sans-serif",
                     fontSize: '14px',
-                    color: '#2d3748',
+                    color: '#3d3427',
                   }}>
                     {tx.platform || tx.category}
                   </span>
-                  <span style={{ fontSize: '11px', color: '#a0aec0' }}>
+                  <span style={{ fontSize: '11px', color: '#a89f8e' }}>
                     {new Date(tx.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
                     {tx.bossName ? ` · ${tx.bossName}` : ''}
                   </span>
@@ -281,7 +280,7 @@ export function Dashboard() {
                 <div style={{
                   fontFamily: "'Noto Serif SC', serif",
                   fontSize: '17px',
-                  color: tx.type === 'income' ? '#5a9fd4' : '#d4a843',
+                  color: tx.type === 'income' ? '#6b9fcf' : '#c9923a',
                   letterSpacing: '-0.01em',
                 }}>
                   {tx.type === 'income' ? '+' : '-'}{tx.amount}

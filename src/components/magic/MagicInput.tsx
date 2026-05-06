@@ -23,10 +23,10 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
       {/* Neumorphic inset input area */}
       <div style={{
         borderRadius: '20px',
-        background: '#e8edf2',
+        background: '#f0ebe0',
         boxShadow: focused
-          ? 'inset 6px 6px 12px #b8c0cc, inset -6px -6px 12px #ffffff'
-          : 'inset 4px 4px 8px #b8c0cc, inset -4px -4px 8px #ffffff',
+          ? 'inset 6px 6px 12px #c8c0b3, inset -6px -6px 12px #fffbf5'
+          : 'inset 4px 4px 8px #cdc5b8, inset -4px -4px 8px #fffbf5',
         transition: `all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)`,
         padding: '4px',
       }}>
@@ -48,9 +48,9 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
             fontSize: 'clamp(15px, 2.5vw, 19px)',
             fontWeight: 400,
             letterSpacing: '0.05em',
-            color: '#2d3748',
+            color: '#3d3427',
             textAlign: 'center',
-            caretColor: '#d4a843',
+            caretColor: '#c9923a',
           }}
         />
       </div>

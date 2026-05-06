@@ -1,31 +1,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap');
 
-/* ─── CSS Variables — 新拟物派 ─── */
+/* ─── CSS Variables — 暖米色新拟物 ─── */
 :root {
-  /* 主背景 — 柔和浅灰 */
-  --bg-primary: #e8edf2;
-  --bg-secondary: #dde3eb;
-  --bg-card: #e8edf2;
-  --text-primary: #2d3748;
-  --text-secondary: #718096;
-  --text-muted: #a0aec0;
+  /* 暖米色背景 */
+  --bg-primary: #f5f0e8;
+  --bg-secondary: #ede7db;
+  --bg-card: #f0ebe0;
+
+  /* 暖棕文字 */
+  --text-primary: #3d3427;
+  --text-secondary: #7a6d5a;
+  --text-muted: #a89f8e;
 
   /* 新拟物强调色 */
-  --accent-blue: #5a9fd4;
-  --accent-gold: #d4a843;
-  --accent-gold-dim: rgba(212, 168, 67, 0.12);
-  --success: #68c493;
-  --danger: #e07070;
+  --accent-blue: #6b9fcf;
+  --accent-gold: #c9923a;
+  --accent-gold-dim: rgba(201, 146, 58, 0.12);
+  --accent-gold-bright: #dba43a;
+  --success: #5dab73;
+  --danger: #c85c5c;
 
   /* 新拟物阴影色 */
-  --shadow-dark: #b8c0cc;
-  --shadow-light: #ffffff;
+  --shadow-dark: #cdc5b8;
+  --shadow-light: #fffbf5;
 
   /* 双阴影变量 */
-  --neu-raised: 8px 8px 16px #b8c0cc, -8px -8px 16px #ffffff;
-  --neu-raised-sm: 4px 4px 8px #b8c0cc, -4px -4px 8px #ffffff;
-  --neu-inset: inset 6px 6px 12px #b8c0cc, inset -6px -6px 12px #ffffff;
-  --neu-inset-sm: inset 3px 3px 6px #b8c0cc, inset -3px -3px 6px #ffffff;
+  --neu-raised: 8px 8px 16px #cdc5b8, -8px -8px 16px #fffbf5;
+  --neu-raised-sm: 4px 4px 8px #cdc5b8, -4px -4px 8px #fffbf5;
+  --neu-inset: inset 6px 6px 12px #cdc5b8, inset -6px -6px 12px #fffbf5;
+  --neu-inset-sm: inset 3px 3px 6px #cdc5b8, inset -3px -3px 6px #fffbf5;
 
   /* Typography */
   --font-display: 'Noto Serif SC', serif;
@@ -80,7 +83,7 @@ body {
 
 /* ─── Selection ─── */
 ::selection {
-  background: rgba(90, 159, 212, 0.2);
+  background: rgba(201, 146, 58, 0.15);
   color: var(--text-primary);
 }
 
@@ -96,6 +99,9 @@ body {
   background: var(--shadow-dark);
   border-radius: var(--radius-full);
 }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
 
 /* ─── Focus ─── */
 :focus-visible {
@@ -110,6 +116,7 @@ h1, h2, h3 {
   font-weight: 400;
   line-height: 1.3;
   letter-spacing: 0.02em;
+  color: var(--text-primary);
 }
 
 /* ─── Neumorphic Card ─── */
@@ -137,11 +144,6 @@ h1, h2, h3 {
 .neu-btn:active {
   box-shadow: var(--neu-inset-sm);
   transform: scale(0.98);
-}
-
-.neu-btn-primary {
-  background: linear-gradient(145deg, #f0f5fc, #d5dce6);
-  color: var(--accent-gold);
 }
 
 /* ─── Utility ─── */

@@ -69,8 +69,8 @@ export function TabBar() {
         display: 'flex',
         padding: '10px 16px 12px',
         paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-        background: '#e8edf2',
-        boxShadow: '0 -4px 16px rgba(163,170,182,0.3)',
+        background: '#f5f0e8',
+        boxShadow: '0 -4px 16px rgba(163, 158, 148, 0.3)',
       }}
     >
       {tabs.map((tab) => {
@@ -88,9 +88,9 @@ export function TabBar() {
               padding: '10px 8px',
               textDecoration: 'none',
               borderRadius: '14px',
-              background: active ? 'transparent' : 'transparent',
-              boxShadow: active ? 'inset 3px 3px 6px #b8c0cc, inset -3px -3px 6px #ffffff' : 'none',
-              color: active ? '#d4a843' : '#a0aec0',
+              background: active ? '#f0ebe0' : 'transparent',
+              boxShadow: active ? 'inset 3px 3px 6px #cdc5b8, inset -3px -3px 6px #fffbf5' : 'none',
+              color: active ? '#c9923a' : '#a89f8e',
               transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}
           >
