@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Wish } from '../../store/db';
+import { WishBottle } from './WishBottle';
 
 interface WishPickerProps {
   amount: number;
@@ -106,12 +107,12 @@ export const WishPicker: React.FC<WishPickerProps> = ({
         {/* Wishes Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-          gap: '12px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+          gap: '16px',
           marginBottom: '20px',
-          maxHeight: '320px',
+          maxHeight: '360px',
           overflowY: 'auto',
-          padding: '4px 2px',
+          padding: '8px 4px',
         }}>
           {wishes.map(wish => (
             <div
@@ -121,11 +122,14 @@ export const WishPicker: React.FC<WishPickerProps> = ({
                 position: 'relative',
                 background: '#f0ebe0',
                 borderRadius: '16px',
-                padding: '16px 14px',
+                padding: '16px 12px',
                 boxShadow: '5px 5px 10px #cdc5b8, -5px -5px 10px #fffbf5',
                 cursor: 'pointer',
                 transition: `all 0.25s ${springTransition}`,
                 overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
               }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.03)';
@@ -155,36 +159,15 @@ export const WishPicker: React.FC<WishPickerProps> = ({
                 }} />
               )}
 
-              {/* Mini bottle icon */}
-              <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                <svg width="48" height="64" viewBox="0 0 120 180">
-                  {/* Bottle body */}
-                  <path
-                    d="M 35 50 Q 35 40 45 40 L 75 40 Q 85 40 85 50 L 85 55 Q 110 70 110 100 Q 110 140 85 155 Q 70 165 50 165 Q 30 165 15 155 Q 10 140 10 100 Q 10 70 35 55 Z"
-                    fill="#f0ebe0"
-                    stroke="#c5bdb0"
-                    strokeWidth="1.5"
-                  />
-                  {/* Neck */}
-                  <rect x="45" y="20" width="30" height="25" rx="3" fill="#f0ebe0" stroke="#c5bdb0" strokeWidth="1.5" />
-                  {/* Cork */}
-                  <rect x="48" y="12" width="24" height="12" rx="3" fill="#d4c4a8" stroke="#c5bdb0" strokeWidth="1" />
-                  {/* Liquid fill */}
-                  {(() => {
-                    const newBalance = wish.currentBalance + amount;
-                    const percentage = Math.min((newBalance / wish.targetPrice) * 100, 100);
-                    const fillHeight = (percentage / 100) * 120;
-                    const fillY = 170 - fillHeight;
-                    const fillColor = percentage >= 100 ? '#c9923a' : '#6b9fcf';
-                    if (fillHeight <= 0) return null;
-                    return (
-                      <path
-                        d={`M 35 ${Math.max(fillY, 55)} Q 35 ${Math.max(fillY - 15, 40)} 45 ${Math.max(fillY, 40) + 5} L 75 ${Math.max(fillY, 40) + 5} Q 85 ${Math.max(fillY - 15, 40)} 85 55 L 85 ${Math.min(fillY, 170)} Q 110 ${Math.min(fillY + 40, 165)} 110 100 Q 110 165 85 155 Q 70 165 50 165 Q 30 165 15 155 Q 10 165 10 100 Q 10 ${Math.min(fillY + 40, 165)} 35 ${Math.min(fillY, 170)} Z`}
-                        fill={fillColor}
-                      />
-                    );
-                  })()}
-                </svg>
+              {/* 粒子许愿瓶 */}
+              <div style={{ marginBottom: '8px', transform: 'scale(0.85)', transformOrigin: 'center' }}>
+                <WishBottle
+                  name=""
+                  currentBalance={wish.currentBalance}
+                  targetPrice={wish.targetPrice}
+                  status={wish.status}
+                  onClick={() => {}}
+                />
               </div>
 
               {/* Wish info */}
@@ -198,6 +181,7 @@ export const WishPicker: React.FC<WishPickerProps> = ({
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
+                  maxWidth: '120px',
                 }}>
                   {wish.name}
                 </div>

@@ -7,6 +7,8 @@ import { Workbench } from './pages/Workbench';
 import { Reports } from './pages/Reports';
 import { Records } from './pages/Records';
 import { Reflection } from './pages/Reflection';
+import IntroPage from './pages/IntroPage';
+import Settings from './pages/Settings';
 import './styles/global.css';
 
 function App() {
@@ -25,12 +27,14 @@ function App() {
         >
           <div style={{ flex: 1, paddingBottom: '80px' }}>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<IntroPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/wishes" element={<Wishes />} />
               <Route path="/workbench" element={<Workbench />} />
               <Route path="/reflection" element={<Reflection />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/records" element={<Records />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>
           <TabBar />

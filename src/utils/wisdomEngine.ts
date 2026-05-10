@@ -1,12 +1,14 @@
 // src/utils/wisdomEngine.ts
 
-export enum WisdomLevel {
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  WARNING = 'warning',
-  DANGER = 'danger',
-  BEGINNER = 'beginner',
-}
+export const WisdomLevel = {
+  EXCELLENT: 'excellent',
+  GOOD: 'good',
+  WARNING: 'warning',
+  DANGER: 'danger',
+  BEGINNER: 'beginner',
+} as const;
+
+export type WisdomLevel = typeof WisdomLevel[keyof typeof WisdomLevel];
 
 export interface Insight {
   level: WisdomLevel;

@@ -4,11 +4,11 @@ import type { ReactNode } from 'react';
 interface ToastItem {
   id: string;
   message: string;
-  type: 'success' | 'info';
+  type: 'success' | 'info' | 'error';
 }
 
 interface ToastContextValue {
-  showToast: (message: string, type?: 'success' | 'info') => void;
+  showToast: (message: string, type?: 'success' | 'info' | 'error') => void;
 }
 
 const ToastContext = createContext<ToastContextValue>({ showToast: () => {} });
@@ -16,7 +16,7 @@ const ToastContext = createContext<ToastContextValue>({ showToast: () => {} });
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const showToast = useCallback((message: string, type: 'success' | 'info' = 'success') => {
+  const showToast = useCallback((message: string, type: 'success' | 'info' | 'error' = 'success') => {
     const id = crypto.randomUUID();
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => {
@@ -45,7 +45,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             border: '1px solid var(--border-subtle)',
             borderRadius: '12px',
             padding: '10px 20px',
-            color: toast.type === 'success' ? 'var(--accent-blue)' : 'var(--text-secondary)',
+            color: toast.type === 'success' ? 'var(--accent-blue)' : toast.type === 'error' ? 'var(--accent-red)' : 'var(--text-secondary)',
             fontFamily: 'var(--font-body)',
             fontSize: '14px',
             letterSpacing: '0.05em',

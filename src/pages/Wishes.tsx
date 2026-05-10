@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import gsap from 'gsap';
 import { useWishes } from '../store/useWishes';
 import { useLedger } from '../store/useLedger';
 import { WishBottle } from '../components/wishes/WishBottle';
@@ -185,6 +186,20 @@ export function Wishes() {
   const [showModal, setShowModal] = useState(false);
   const [selectedWish, setSelectedWish] = useState(null as any);
   const [wishTransactions, setWishTransactions] = useState([] as any[]);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!pageRef.current) return;
+    const sections = pageRef.current.querySelectorAll('.animate-in');
+    gsap.fromTo(sections, { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65, stagger: 0.1, ease: 'power2.out', delay: 0.1 });
+  }, []);
+
+  useEffect(() => {
+    if (!cardsRef.current) return;
+    const cards = cardsRef.current.querySelectorAll('.wish-card');
+    gsap.fromTo(cards, { scale: 0.85, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: 'back.out(1.7)', delay: 0.3 });
+  }, [wishes.length]);
 
   const handleAddWish = async (data: { name: string; targetPrice: number }) => {
     await addWish(data);
@@ -192,9 +207,9 @@ export function Wishes() {
   };
 
   return (
-    <div style={{ padding: '40px 24px 100px', background: css.bg, minHeight: '100vh' }}>
+    <div ref={pageRef} style={{ padding: '40px 24px 100px', background: css.bg, minHeight: '100vh' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div className="animate-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <h1
           style={{
             margin: 0,
@@ -214,6 +229,8 @@ export function Wishes() {
         <EmptyState />
       ) : (
         <div
+          ref={cardsRef}
+          className="animate-in"
           style={{
             display: 'flex',
             flexDirection: 'row',
@@ -231,6 +248,7 @@ export function Wishes() {
             return (
               <div
                 key={wish.id}
+                className="wish-card"
                 style={{
                   scrollSnapAlign: 'start',
                   flexShrink: 0,

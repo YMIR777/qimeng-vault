@@ -1,8 +1,24 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useLedger } from '../store/useLedger';
+import gsap from 'gsap';
 
 export function Reflection() {
   const { transactions } = useLedger();
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!pageRef.current) return;
+    const sections = pageRef.current.querySelectorAll('.animate-in');
+    gsap.fromTo(sections,
+      { y: 36, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.65, stagger: 0.1, ease: 'power2.out', delay: 0.1 }
+    );
+    const items = pageRef.current.querySelectorAll('.tx-item');
+    gsap.fromTo(items,
+      { x: -20, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out', delay: 0.4 }
+    );
+  }, [transactions.length]);
 
   const { worthyTx, unworthyTx, worthyTotal, unworthyTotal, worthyCount, unworthyCount } = useMemo(() => {
     const expenses = transactions.filter(t => t.type === 'expense');
@@ -27,14 +43,14 @@ export function Reflection() {
   }
 
   return (
-    <div style={{
+    <div ref={pageRef} style={{
       padding: '48px 24px 110px',
       maxWidth: '560px',
       margin: '0 auto',
       minHeight: '100dvh',
     }}>
       {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
+      <div className="animate-in" style={{ marginBottom: '28px' }}>
         <div style={{
           fontFamily: "'Noto Serif SC', serif",
           fontSize: '11px',
@@ -53,13 +69,13 @@ export function Reflection() {
       </div>
 
       {/* Asymmetric Bento Stats */}
-      <div style={{
+      <div className="animate-in" style={{
         display: 'grid',
         gridTemplateColumns: '3fr 2fr',
         gap: '10px',
         marginBottom: '32px',
       }}>
-        {/* 值得 — larger */}
+        {/* 值得 */}
         <div style={{
           background: '#f0ebe0',
           borderRadius: '18px',
@@ -98,7 +114,7 @@ export function Reflection() {
           </div>
         </div>
 
-        {/* 不值 — smaller */}
+        {/* 不值 */}
         <div style={{
           background: '#f0ebe0',
           borderRadius: '18px',
@@ -124,8 +140,8 @@ export function Reflection() {
         </div>
       </div>
 
-      {/* 不值得的支出 — 需要反思 */}
-      <div style={{ marginBottom: '28px' }}>
+      {/* 不值得的支出 */}
+      <div className="animate-in" style={{ marginBottom: '28px' }}>
         <div style={{
           display: 'flex',
           alignItems: 'baseline',
@@ -162,7 +178,7 @@ export function Reflection() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {unworthyTx.slice(0, 5).map(tx => (
-              <div key={tx.id} style={{
+              <div key={tx.id} className="tx-item" style={{
                 padding: '14px 18px',
                 background: '#f0ebe0',
                 borderRadius: '14px',
@@ -221,7 +237,7 @@ export function Reflection() {
       </div>
 
       {/* 值得的支出 */}
-      <div>
+      <div className="animate-in">
         <div style={{
           display: 'flex',
           alignItems: 'baseline',
@@ -255,7 +271,7 @@ export function Reflection() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {worthyTx.slice(0, 5).map(tx => (
-              <div key={tx.id} style={{
+              <div key={tx.id} className="tx-item" style={{
                 padding: '14px 18px',
                 background: '#f0ebe0',
                 borderRadius: '14px',

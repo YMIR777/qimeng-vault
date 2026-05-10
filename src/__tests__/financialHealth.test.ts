@@ -7,9 +7,10 @@ import {
   calcHourlyRate,
   calcTimeCost,
 } from '../utils/financialHealth';
+import type { Transaction } from '../utils/financialHealth';
 
 describe('financialHealth utils', () => {
-  const mockTx = [
+  const mockTx: Transaction[] = [
     { type: 'income', amount: 5000, date: Date.now(), platform: '比心', timeSpent: 240 },
     { type: 'expense', amount: 2000, date: Date.now(), category: '餐饮' },
     { type: 'expense', amount: 1000, date: Date.now(), category: '交通' },

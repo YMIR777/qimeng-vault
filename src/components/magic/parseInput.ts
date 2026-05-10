@@ -7,6 +7,7 @@ export interface ParseResult {
   judgment?: 'worthy' | 'unworthy';
   timeSpent?: number;
   note?: string;
+  accountId?: string;
   complete: boolean;
   missingFields: string[];
 }
@@ -122,17 +123,17 @@ export function parseInput(input: string): ParseResult {
   const timeSpent = extractTimeSpent(input);
 
   if (type === 'income') {
+    // 始终显示 SupplementForm，让用户有机会补充/修改所有信息
     const missingFields: string[] = [];
     if (!platform) missingFields.push('platform');
-    const complete = !!platform;
     return { 
       type, 
       platform, 
       amount, 
       bossName, 
       timeSpent, 
-      note: input,  // 日记式完整记录
-      complete, 
+      note: input,
+      complete: false,  // 强制进入补充界面
       missingFields 
     };
   }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { db } from './db';
 import type { Wish } from './db';
 
@@ -54,5 +54,10 @@ export function useWishes() {
     setWishes(all);
   };
 
-  return { wishes, addWish, depositToWish, withdrawFromWish, deleteWish };
+  const refresh = useCallback(async () => {
+    const all = await db.wishes.toArray();
+    setWishes(all);
+  }, []);
+
+  return { wishes, addWish, depositToWish, withdrawFromWish, deleteWish, refresh };
 }

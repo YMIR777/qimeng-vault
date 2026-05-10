@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import { WisdomTooltip } from '../components/ui/WisdomTooltip';
 
 describe('WisdomTooltip', () => {

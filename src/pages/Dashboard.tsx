@@ -1,21 +1,179 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import gsap from 'gsap';
 import { useLedger } from '../store/useLedger';
+import { useAccounts } from '../store/useAccounts';
 import { useWishes } from '../store/useWishes';
+import { useBudgets } from '../store/useBudgets';
 import type { ParseResult } from '../components/magic/parseInput';
 import { MagicInput } from '../components/magic/MagicInput';
 import { ExpenseDecision } from '../components/magic/ExpenseDecision';
 import { SupplementForm } from '../components/magic/SupplementForm';
 import { WishPicker } from '../components/wishes/WishPicker';
 import { useToast } from '../components/ui/Toast';
+import { db } from '../store/db';
 
 function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 3);
 }
 
+// ── BudgetProgress — 预算进度（接收 transactions prop）────────────────
+function BudgetProgress({ transactions }: { transactions: any[] }) {
+  const { budgets } = useBudgets();
+
+  // 同步计算 — 直接从传入的 transactions 过滤
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+
+  const items = budgets.map((budget: any) => {
+    const used = transactions
+      .filter((t: any) => t.type === 'expense' && t.date >= start && t.date < end && t.category === budget.category)
+      .reduce((sum: number, t: any) => sum + t.amount, 0);
+    return {
+      budget,
+      used,
+      pct: Math.min((used / budget.amount) * 100, 100),
+    };
+  });
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="animate-in" style={{ marginBottom: '24px' }}>
+      <div style={{
+        fontFamily: "'Noto Sans SC', sans-serif",
+        fontSize: '12px',
+        fontWeight: 500,
+        color: '#a89f8e',
+        letterSpacing: '0.08em',
+        marginBottom: '10px',
+      }}>本月预算</div>
+      <div style={{ display: 'grid', gap: '10px' }}>
+        {items.map(({ budget, used, pct }) => (
+          <div key={budget.id} style={{
+            background: '#f0ebe0',
+            borderRadius: '14px',
+            padding: '14px 16px',
+            boxShadow: '3px 3px 8px #cdc5b8, -3px -3px 8px #fffbf5',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span style={{ fontSize: '13px', color: '#3d3427', fontFamily: "'Noto Sans SC', sans-serif" }}>
+                {budget.category}
+              </span>
+              <span style={{ fontSize: '13px', color: pct > 80 ? '#d4a0a0' : '#7a9e7e', fontFamily: "'Noto Serif SC', serif" }}>
+                ¥{used.toLocaleString()} / ¥{budget.amount.toLocaleString()}
+              </span>
+            </div>
+            <div style={{
+              height: '6px',
+              borderRadius: '3px',
+              background: 'rgba(163,158,148,0.15)',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${pct}%`,
+                borderRadius: '3px',
+                background: pct > 80 ? '#d4a0a0' : pct > 50 ? '#c9923a' : '#7a9e7e',
+                transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }} />
+            </div>
+            {pct > 80 && (
+              <div style={{ fontSize: '11px', color: '#d4a0a0', marginTop: '6px' }}>
+                预算即将用完，剩余 ¥{(budget.amount - used).toLocaleString()}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── AccountOverview — 账户总览 ─────────────────────────────────────
+function AccountOverview() {
+  const { accounts } = useAccounts();
+
+  if (accounts.length === 0) return null;
+
+  return (
+    <div className="animate-in" style={{ marginBottom: '24px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '10px',
+      }}>
+        <div style={{
+          fontFamily: "'Noto Sans SC', sans-serif",
+          fontSize: '12px',
+          fontWeight: 500,
+          color: '#a89f8e',
+          letterSpacing: '0.08em',
+        }}>账户总览</div>
+        <Link to="/settings" style={{
+          fontSize: '11px',
+          color: '#b8af9e',
+          textDecoration: 'none',
+          letterSpacing: '0.05em',
+        }}>管理 →</Link>
+      </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+        gap: '8px',
+      }}>
+        {accounts.map((account) => (
+          <div key={account.id} style={{
+            background: '#f0ebe0',
+            borderRadius: '14px',
+            padding: '14px 12px',
+            boxShadow: '3px 3px 8px #cdc5b8, -3px -3px 8px #fffbf5',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: account.color,
+              margin: '0 auto 6px',
+            }} />
+            <div style={{
+              fontFamily: "'Noto Serif SC', serif",
+              fontSize: '16px',
+              color: '#3d3427',
+              letterSpacing: '-0.01em',
+            }}>¥{account.balance.toLocaleString()}</div>
+            <div style={{
+              fontFamily: "'Noto Sans SC', sans-serif",
+              fontSize: '10px',
+              color: '#a89f8e',
+              marginTop: '2px',
+            }}>{account.name}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Dashboard() {
   const { transactions, totalAsset, addTransaction, updateTransaction } = useLedger();
   const { wishes, depositToWish } = useWishes();
+  const { accounts } = useAccounts();
+  const { budgets: _budgets } = useBudgets();
   const { showToast } = useToast();
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!pageRef.current) return;
+    const sections = pageRef.current.querySelectorAll('.animate-in');
+    gsap.fromTo(sections, { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65, stagger: 0.1, ease: 'power2.out', delay: 0.1 });
+    const items = pageRef.current.querySelectorAll('.tx-item');
+    gsap.fromTo(items, { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out', delay: 0.5 });
+  }, [transactions.length]);
+
   const [displayNumber, setDisplayNumber] = useState(0);
   const [showDecision, setShowDecision] = useState(false);
   const [pendingExpense, setPendingExpense] = useState<ParseResult | null>(null);
@@ -24,6 +182,7 @@ export function Dashboard() {
   const [showWishPicker, setShowWishPicker] = useState(false);
   const [wishPickerAmount, setWishPickerAmount] = useState(0);
   const [lastTxId, setLastTxId] = useState<string | null>(null);
+  const [lastAccountId, setLastAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     let start: number | null = null;
@@ -48,8 +207,8 @@ export function Dashboard() {
       return;
     }
     if (result.type === 'income') {
-      // For income with amount >= 20, offer to deposit to wish
-      if (wishes.length > 0 && result.amount >= 20) {
+      // 所有收入都可以存入许愿瓶
+      if (wishes.length > 0) {
         const txId = await addTransaction({
           type: 'income',
           amount: result.amount,
@@ -58,8 +217,10 @@ export function Dashboard() {
           timeSpent: result.timeSpent,
           note: result.note || '',
           date: Date.now(),
+          accountId: result.accountId,
         });
         setLastTxId(txId);
+        setLastAccountId(result.accountId || null);
         setWishPickerAmount(result.amount);
         setShowWishPicker(true);
       } else {
@@ -71,15 +232,16 @@ export function Dashboard() {
           timeSpent: result.timeSpent,
           note: result.note || '',
           date: Date.now(),
+          accountId: result.accountId,
         });
         showToast(`+${result.amount} 元（${result.platform} 收入）`, 'success');
       }
       return;
     }
     if (result.type === 'expense') {
-      // For expense, skip wish picker entirely — money already left
-      setPendingExpense(result);
-      setShowDecision(true);
+      // 所有支出强制走 SupplementForm，确保选择账户
+      setPendingIncomplete(result);
+      setShowSupplement(true);
       return;
     }
   }
@@ -87,7 +249,6 @@ export function Dashboard() {
   async function handleExpenseConfirm(judgment: 'worthy' | 'unworthy') {
     if (!pendingExpense) return;
     setShowDecision(false);
-    // Worthy judgment is just a label — no deposit from expenses
     if (!pendingExpense.complete) {
       setPendingIncomplete({ ...pendingExpense, judgment });
       setShowSupplement(true);
@@ -102,15 +263,25 @@ export function Dashboard() {
         timeSpent: pendingExpense.timeSpent,
         note: pendingExpense.note,
         date: Date.now(),
+        accountId: pendingExpense.accountId,
       });
       showToast(`${pendingExpense.amount} 元（支出）· ${judgment === 'worthy' ? '值得' : '不值'}`, 'success');
       setPendingExpense(null);
     }
   }
 
-  async function handleSupplementConfirm(result: ParseResult) {
+  async function handleSupplementConfirm(result: ParseResult & { accountId?: string }) {
     setShowSupplement(false);
     if (!pendingIncomplete && !pendingExpense) return;
+
+    // 支出类型：保存完整结果后弹出值得/不值得判断
+    if (result.type === 'expense') {
+      setPendingExpense(result);
+      setShowDecision(true);
+      return;
+    }
+
+    // income 类型：直接记录
     const judgment = pendingIncomplete?.judgment;
     const txId = await addTransaction({
       type: result.type!,
@@ -121,12 +292,14 @@ export function Dashboard() {
       judgment,
       timeSpent: result.timeSpent,
       note: result.note,
+      accountId: result.accountId,
       date: Date.now(),
     });
     const typeLabel = result.type === 'income' ? '收入' : '支出';
-    // For income >= 20, offer wish deposit
-    if (result.type === 'income' && wishes.length > 0 && result.amount >= 20) {
+    // 所有收入都可以存入许愿瓶
+    if (result.type === 'income' && wishes.length > 0) {
       setLastTxId(txId);
+      setLastAccountId(result.accountId || null);
       setWishPickerAmount(result.amount);
       setShowWishPicker(true);
       return;
@@ -156,22 +329,46 @@ export function Dashboard() {
   const [integerPart, decimalPart] = formattedNumber.split('.');
 
   return (
-    <div style={{
+    <div ref={pageRef} style={{
       padding: '48px 28px 100px',
       maxWidth: '560px',
       margin: '0 auto',
       minHeight: '100dvh',
     }}>
       {/* Header Section */}
-      <div style={{ marginBottom: '8px', textAlign: 'center' }}>
+      <div className="animate-in" style={{ marginBottom: '8px', textAlign: 'center' }}>
         <div style={{
-          fontFamily: "'Noto Serif SC', serif",
-          fontSize: '11px',
-          letterSpacing: '0.5em',
-          color: '#b8af9e',
-          textTransform: 'uppercase',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           marginBottom: '2px',
-        }}>绮梦账间</div>
+        }}>
+          <div style={{
+            fontFamily: "'Noto Serif SC', serif",
+            fontSize: '11px',
+            letterSpacing: '0.5em',
+            color: '#b8af9e',
+            textTransform: 'uppercase',
+            marginBottom: '2px',
+            flex: 1,
+            textAlign: 'center',
+          }}>绮梦账间</div>
+          <Link to="/settings" style={{
+            position: 'absolute',
+            right: '28px',
+            top: '48px',
+            textDecoration: 'none',
+            color: '#b8af9e',
+            transition: 'color 0.2s ease',
+            padding: '8px',
+          }} onMouseEnter={e => (e.currentTarget.style.color = '#a89f8e')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#b8af9e')}>
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <circle cx="10" cy="10" r="2"/>
+              <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/>
+            </svg>
+          </Link>
+        </div>
         <div style={{
           fontFamily: "'Noto Sans SC', sans-serif",
           fontSize: '9px',
@@ -182,7 +379,7 @@ export function Dashboard() {
       </div>
 
       {/* Asset Display — 重新设计 */}
-      <div style={{
+      <div className="animate-in" style={{
         textAlign: 'center',
         marginBottom: '44px',
         padding: '32px 20px 28px',
@@ -286,7 +483,7 @@ export function Dashboard() {
       </div>
 
       {/* Magic Input */}
-      <div style={{ marginBottom: '36px', padding: '0 8px' }}>
+      <div className="animate-in" style={{ marginBottom: '36px', padding: '0 8px' }}>
         <MagicInput onSubmit={handleInputSubmit} />
         <p style={{
           textAlign: 'center',
@@ -299,8 +496,14 @@ export function Dashboard() {
         </p>
       </div>
 
+      {/* Account Overview */}
+      <AccountOverview />
+
+      {/* Budget Progress */}
+      <BudgetProgress transactions={transactions} />
+
       {/* Quick Stats — Asymmetric Bento Grid */}
-      <div style={{
+      <div className="animate-in" style={{
         display: 'grid',
         gridTemplateColumns: '2fr 1fr 1fr',
         gap: '10px',
@@ -436,7 +639,7 @@ export function Dashboard() {
             gap: '10px',
           }}>
             {recentTx.map(tx => (
-              <div key={tx.id} style={{
+              <div key={tx.id} className="tx-item" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -490,6 +693,7 @@ export function Dashboard() {
       {showSupplement && pendingIncomplete && (
         <SupplementForm
           initial={pendingIncomplete}
+          accounts={accounts.map(a => ({ id: a.id, name: a.name, color: a.color }))}
           onConfirm={handleSupplementConfirm}
           onCancel={() => { setShowSupplement(false); setPendingIncomplete(null); setPendingExpense(null); }}
         />
@@ -500,6 +704,13 @@ export function Dashboard() {
           amount={wishPickerAmount}
           wishes={wishes}
           onDeposit={async (wishId: string, amount: number) => {
+            if (lastAccountId) {
+              // 存入许愿瓶 = 从关联账户扣钱
+              const acc = await db.accounts.get(lastAccountId);
+              if (acc && acc.balance >= amount) {
+                await db.accounts.update(lastAccountId, { balance: acc.balance - amount });
+              }
+            }
             await depositToWish(wishId, amount);
             if (lastTxId) {
               await updateTransaction(lastTxId, { wishId });
@@ -507,13 +718,115 @@ export function Dashboard() {
             showToast(`+${amount} 元存入星体`, 'success');
             setShowWishPicker(false);
             setLastTxId(null);
+            setLastAccountId(null);
           }}
           onClose={() => {
             setShowWishPicker(false);
             setLastTxId(null);
+            setLastAccountId(null);
           }}
         />
       )}
+      {/* 危险区域：数据管理 */}
+      <div style={{ marginTop: '48px', paddingTop: '20px', borderTop: '1px solid #e0dbd3' }}>
+        <div style={{ fontSize: '11px', color: '#b8af9e', letterSpacing: '0.1em', marginBottom: '12px' }}>
+          数据管理
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+          {/* 导出 */}
+          <button
+            onClick={async () => {
+              const txs = await db.transactions.toArray();
+              const wishes = await db.wishes.toArray();
+              const data = { version: 1, exportedAt: Date.now(), transactions: txs, wishes };
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `绮梦账间备份_${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              showToast('备份已下载', 'success');
+            }}
+            style={{
+              flex: 1, padding: '12px',
+              background: '#f0ebe0', border: 'none', borderRadius: '10px',
+              boxShadow: '3px 3px 6px #cdc5b8, -3px -3px 6px #fffbf5',
+              color: '#3d3427', fontFamily: "'Noto Sans SC', sans-serif",
+              fontSize: '13px', cursor: 'pointer',
+            }}
+          >
+            导出备份
+          </button>
+
+          {/* 导入 */}
+          <button
+            onClick={() => document.getElementById('import-file')?.click()}
+            style={{
+              flex: 1, padding: '12px',
+              background: '#f0ebe0', border: 'none', borderRadius: '10px',
+              boxShadow: '3px 3px 6px #cdc5b8, -3px -3px 6px #fffbf5',
+              color: '#3d3427', fontFamily: "'Noto Sans SC', sans-serif",
+              fontSize: '13px', cursor: 'pointer',
+            }}
+          >
+            导入恢复
+          </button>
+          <input
+            id="import-file"
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                if (!data.transactions || !data.wishes) {
+                  showToast('文件格式不对', 'error');
+                  return;
+                }
+                if (!window.confirm(`导入将覆盖现有数据（${data.transactions.length} 条记录 + ${data.wishes.length} 个星体），确定吗？`)) return;
+                await db.transactions.clear();
+                await db.wishes.clear();
+                await db.transactions.bulkAdd(data.transactions);
+                await db.wishes.bulkAdd(data.wishes);
+                window.location.reload();
+              } catch (err) {
+                showToast('导入失败：' + (err as Error).message, 'error');
+              }
+              e.target.value = '';
+            }}
+          />
+        </div>
+
+        {/* 清除 */}
+        <button
+          onClick={async () => {
+            if (!window.confirm('⚠️ 确定要清除所有数据吗？\n\n这将删除所有记账记录、星体、账户和预算，不可恢复。')) return;
+            await db.transactions.clear();
+            await db.wishes.clear();
+            await db.accounts.clear();
+            await db.budgets.clear();
+            window.location.reload();
+          }}
+          style={{
+            width: '100%', padding: '12px',
+            background: 'transparent', border: '1px solid #d4a0a0',
+            borderRadius: '10px', color: '#c07070',
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '13px', cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,112,112,0.08)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+        >
+          清除所有数据
+        </button>
+      </div>
+
     </div>
   );
 }

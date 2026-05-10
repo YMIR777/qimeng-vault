@@ -1,16 +1,8 @@
 import { useMemo } from 'react';
+import type { Transaction } from '../../store/db';
 import { calcMonthlyStats, calcEmergencyFundMonths, calcHourlyRate } from '../../utils/financialHealth';
 import { getSavingsRateInsight, getEmergencyFundInsight } from '../../utils/wisdomEngine';
 import { WisdomTooltip } from '../ui/WisdomTooltip';
-
-interface Transaction {
-  type: 'income' | 'expense';
-  amount: number;
-  date: number;
-  category?: string;
-  platform?: string;
-  timeSpent?: number;
-}
 
 interface Props {
   transactions: Transaction[];
