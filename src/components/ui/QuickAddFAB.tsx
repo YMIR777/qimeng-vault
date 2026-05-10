@@ -45,24 +45,23 @@ export function QuickAddFAB() {
         e.currentTarget.style.transform = 'scale(1.12)';
       }}
     >
-      {/* 羽毛笔 SVG - 记录记账的隐喻，旋转45度模拟书写角度 */}
+      {/* 羽毛笔 SVG — 简洁线条，笔尖朝下，清晰可辨 */}
       <svg
-        width="26"
-        height="26"
+        width="24"
+        height="24"
         viewBox="0 0 24 24"
         fill="none"
         stroke="#c9923a"
-        strokeWidth="1.8"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        style={{ transform: 'rotate(-45deg)' }}
       >
-        {/* 羽毛笔身 */}
-        <path d="M20.24 3.76a1.5 1.5 0 0 1 0 2.12L9.5 16.62a1 1 0 0 1-.65.27H5.5a1.5 1.5 0 0 1 0-3h2.12l10.74-10.74a1.5 1.5 0 0 1 2.12 0z" />
-        {/* 羽毛纹理 */}
-        <path d="M12 12l8.5 8.5" />
-        <path d="M17 7l-5 5" />
-        <path d="M19.5 5.5l-4 4" />
+        {/* 笔身 — 简洁的斜线 */}
+        <path d="M17 3L7 13l-2 6 6-2 10-10-4-4z" />
+        {/* 笔尖 */}
+        <path d="M5 21l2-6" />
+        {/* 墨迹点 — 强调"记录"动作 */}
+        <circle cx="8.5" cy="15.5" r="1" fill="#c9923a" stroke="none" />
       </svg>
     </button>
   );
