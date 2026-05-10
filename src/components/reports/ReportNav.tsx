@@ -1,0 +1,56 @@
+interface ReportNavProps {
+  activeSection: string;
+  onNavigate: (section: string) => void;
+}
+
+const SECTIONS = [
+  { id: 'summary', label: '摘要' },
+  { id: 'trend', label: '趋势' },
+  { id: 'expense', label: '支出' },
+  { id: 'income', label: '收入' },
+  { id: 'health', label: '健康度' },
+];
+
+export function ReportNav({ activeSection, onNavigate }: ReportNavProps) {
+  return (
+    <div style={{
+      position: 'sticky',
+      top: '0',
+      zIndex: 50,
+      background: 'rgba(245,240,232,0.92)',
+      backdropFilter: 'blur(8px)',
+      padding: '12px 0',
+      marginBottom: '24px',
+      borderBottom: '1px solid rgba(163,158,148,0.15)',
+    }}>
+      <div style={{
+        display: 'flex',
+        gap: '4px',
+        overflowX: 'auto',
+        padding: '0 4px',
+      }}>
+        {SECTIONS.map(section => (
+          <button
+            key={section.id}
+            onClick={() => onNavigate(section.id)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '20px',
+              border: 'none',
+              background: activeSection === section.id ? '#f0ebe0' : 'transparent',
+              color: activeSection === section.id ? '#3d3427' : '#a89f8e',
+              fontSize: '12px',
+              fontFamily: "'Noto Sans SC', sans-serif",
+              cursor: 'pointer',
+              boxShadow: activeSection === section.id ? '2px 2px 4px #cdc5b8, -2px -2px 4px #fffbf5' : 'none',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {section.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

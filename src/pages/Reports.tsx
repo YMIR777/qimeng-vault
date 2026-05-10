@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { useLedger } from '../store/useLedger';
 import { FinancialSummary } from '../components/reports/FinancialSummary';
+import { ReportNav } from '../components/reports/ReportNav';
 import {
   calcNetWorthHistory,
   calcFreedomProgress,
@@ -184,6 +185,7 @@ export function Reports() {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
+  const [activeSection, setActiveSection] = useState('summary');
 
   // 计算所有数据
   const monthlyData = useMemo(() => calcMonthlyTrend(transactions), [transactions]);
@@ -274,13 +276,16 @@ export function Reports() {
         </div>
       </div>
 
+      {/* Sticky 导航 */}
+      <ReportNav activeSection={activeSection} onNavigate={setActiveSection} />
+
       {/* 财务摘要卡片 */}
-      <div className="animate-in" style={{ marginBottom: '12px' }}>
+      <div id="summary" className="animate-in" style={{ marginBottom: '12px' }}>
         <FinancialSummary transactions={transactions} />
       </div>
 
       {/* Row 1: 月度收支趋势(2fr) + 资产构成(1fr) */}
-      <div className="animate-in" style={{
+      <div id="trend" className="animate-in" style={{
         display: 'grid',
         gridTemplateColumns: '2fr 1fr',
         gap: '12px',
@@ -405,7 +410,7 @@ export function Reports() {
       </div>
 
       {/* Row 2: 支出分类排行(1fr) + 收入平台分布(2fr) */}
-      <div className="animate-in" style={{
+      <div id="expense" className="animate-in" style={{
         display: 'grid',
         gridTemplateColumns: '1fr 2fr',
         gap: '12px',
@@ -550,7 +555,7 @@ export function Reports() {
       </div>
 
       {/* Row 3: 本月摘要 — 非对称 2fr 1fr 1fr 1fr */}
-      <div className="animate-in">
+      <div id="income" className="animate-in">
         <Card style={{ padding: '24px' }}>
           <div style={{
             fontFamily: "'Noto Sans SC', sans-serif",
