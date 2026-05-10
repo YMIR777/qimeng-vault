@@ -8,34 +8,48 @@ interface WisdomTooltipProps {
 
 export function WisdomTooltip({ wisdom, children, detail }: WisdomTooltipProps) {
   const [visible, setVisible] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const scrollY = window.scrollY;
+    const scrollX = window.scrollX;
+    setPos({
+      x: rect.left + rect.width / 2 + scrollX,
+      y: rect.bottom + scrollY + 10,
+    });
+    setVisible(true);
+  };
 
   return (
-    <span
-      style={{ position: 'relative', display: 'inline-block' }}
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-    >
-      {children}
+    <>
+      <span
+        style={{ display: 'inline-block', cursor: 'help' }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setVisible(false)}
+      >
+        {children}
+      </span>
       {visible && (
         <div
           style={{
-            position: 'absolute',
-            bottom: 'calc(100% + 12px)',
-            left: '50%',
+            position: 'fixed',
+            top: `${pos.y}px`,
+            left: `${pos.x}px`,
             transform: 'translateX(-50%)',
             width: '280px',
             borderRadius: '16px',
             padding: '16px',
-            zIndex: 9999,
+            zIndex: 99999,
             fontSize: '13px',
             lineHeight: '1.6',
             color: '#3d3427',
             pointerEvents: 'none',
-            background: 'rgba(245, 240, 232, 0.97)',
-            backdropFilter: 'blur(16px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(160%)',
-            border: '1px solid rgba(255, 251, 245, 0.7)',
-            boxShadow: '0 8px 32px rgba(163, 158, 148, 0.3), inset 0 1px 0 rgba(255, 251, 245, 0.5)',
+            background: 'rgba(245, 240, 232, 0.98)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            border: '1px solid rgba(255, 251, 245, 0.8)',
+            boxShadow: '0 12px 40px rgba(163, 158, 148, 0.35), inset 0 1px 0 rgba(255, 251, 245, 0.6)',
           }}
         >
           <div style={{ fontWeight: 500, marginBottom: '6px', color: '#c9923a', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -54,18 +68,18 @@ export function WisdomTooltip({ wisdom, children, detail }: WisdomTooltipProps) 
           <div
             style={{
               position: 'absolute',
-              bottom: '-8px',
+              bottom: '-9px',
               left: '50%',
               transform: 'translateX(-50%)',
               width: '0',
               height: '0',
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderTop: '8px solid rgba(245, 240, 232, 0.97)',
+              borderLeft: '9px solid transparent',
+              borderRight: '9px solid transparent',
+              borderTop: '9px solid rgba(245, 240, 232, 0.98)',
             }}
           />
         </div>
       )}
-    </span>
+    </>
   );
 }
