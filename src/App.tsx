@@ -10,6 +10,7 @@ import { Records } from './pages/Records';
 import { Reflection } from './pages/Reflection';
 import IntroPage from './pages/IntroPage';
 import Settings from './pages/Settings';
+import GoalSettings from './components/goals/GoalSettings';
 import './styles/global.css';
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
               <Route path="/reports" element={<Reports />} />
               <Route path="/records" element={<Records />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/goals" element={<GoalSettings />} />
             </Routes>
           </div>
           <QuickAddFAB />

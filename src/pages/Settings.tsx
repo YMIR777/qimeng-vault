@@ -497,6 +497,60 @@ export default function Settings() {
       {/* 预算配置 */}
       <BudgetSection />
 
+      {/* 目标设置入口 */}
+      <div className="animate-in" style={{ marginTop: '32px' }}>
+        <div style={{
+          fontFamily: "'Noto Sans SC', sans-serif",
+          fontSize: '12px', fontWeight: 500, color: css.textMuted,
+          letterSpacing: '0.08em', marginBottom: '14px',
+        }}>
+          目标与规划
+        </div>
+        <a
+          href="/goals"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '18px 20px',
+            background: css.card,
+            borderRadius: '16px',
+            boxShadow: css.shadowRaised,
+            textDecoration: 'none',
+            color: css.text,
+            transition: 'transform 0.2s ease',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{
+              width: '40px', height: '40px',
+              borderRadius: '12px',
+              background: css.accentGold,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="10" cy="10" r="7"/>
+                <path d="M10 6v4l3 2"/>
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '15px', fontWeight: 500 }}>
+                目标设置
+              </div>
+              <div style={{ fontSize: '12px', color: css.textSecondary, marginTop: '2px' }}>
+                收入/支出/储蓄目标，动态建议
+              </div>
+            </div>
+          </div>
+          <span style={{ color: css.textSecondary, fontSize: '16px' }}>→</span>
+        </a>
+      </div>
+
       {/* 底部装饰 */}
       <div className="animate-in" style={{ marginTop: '32px', textAlign: 'center' }}>
         <div style={{
