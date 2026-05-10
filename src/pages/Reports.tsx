@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { useLedger } from '../store/useLedger';
 import { FinancialSummary } from '../components/reports/FinancialSummary';
+import { GoldenGooseCard } from '../components/reports/GoldenGooseCard';
 import { ReportNav } from '../components/reports/ReportNav';
 import {
   calcNetWorthHistory,
@@ -978,6 +979,12 @@ export function Reports() {
             }}>
               财务健康度
             </div>
+            
+            {/* 金鹅守护者卡片 — 完整版 */}
+            <div style={{ marginBottom: '12px' }}>
+              <GoldenGooseCard transactions={transactions} />
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {/* 财富自由进度 */}
               <Card style={{ textAlign: 'center' }}>
