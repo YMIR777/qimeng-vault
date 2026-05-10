@@ -36,6 +36,14 @@ const css = {
 
 const CHART_COLORS = ['#6b9fcf', '#c9923a', '#7a9e7e', '#b8af9e', '#d4a843', '#a89f8e'];
 
+// 生活投资类别
+const LIFE_INVESTMENT_CATEGORIES = ['设备升级', '技能提升', '学习', '健身', '书籍', '课程', '培训', '教育', '投资自己', '软件', '硬件'];
+
+function isLifeInvestment(category?: string): boolean {
+  if (!category) return false;
+  return LIFE_INVESTMENT_CATEGORIES.includes(category);
+}
+
 // ── 月份工具函数 ──────────────────────────────────────────────────
 function getMonthOptions(): string[] {
   const now = new Date();
@@ -80,6 +88,42 @@ function calcMonthlyTrend(transactions: any[]) {
     income: data.income,
     expense: data.expense,
   }));
+}
+
+// ── 新增：日均支出趋势 ────────────────────────────────────────────
+function calcDailyExpenseTrend(transactions: any[], monthStr: string) {
+  const [year, month] = monthStr.split('-').map(Number);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const start = new Date(year, month - 1, 1).getTime();
+  const end = new Date(year, month, 1).getTime();
+  const daily: Record<number, number> = {};
+  for (let i = 1; i <= daysInMonth; i++) daily[i] = 0;
+  for (const tx of transactions) {
+    if (tx.type !== 'expense' || tx.date < start || tx.date >= end) continue;
+    const d = new Date(tx.date);
+    daily[d.getDate()] = (daily[d.getDate()] || 0) + tx.amount;
+  }
+  return Object.entries(daily).map(([day, amount]) => ({
+    day: `${day}日`,
+    amount,
+  }));
+}
+
+// ── 新增：生活投资统计 ────────────────────────────────────────────
+function calcLifeInvestmentStats(transactions: any[], monthStr: string) {
+  const monthTx = filterByMonth(transactions, monthStr);
+  const expenses = monthTx.filter((t: any) => t.type === 'expense');
+  const totalExpense = expenses.reduce((s: number, t: any) => s + t.amount, 0);
+  const lifeInvestment = expenses
+    .filter((t: any) => isLifeInvestment(t.category))
+    .reduce((s: number, t: any) => s + t.amount, 0);
+  const regularExpense = totalExpense - lifeInvestment;
+  return {
+    totalExpense,
+    lifeInvestment,
+    regularExpense,
+    ratio: totalExpense > 0 ? (lifeInvestment / totalExpense) * 100 : 0,
+  };
 }
 
 function calcCategoryRanking(transactions: any[]) {
@@ -127,7 +171,7 @@ function AnimatedNumber({ value, prefix = '', suffix = '', duration = 1.2, delay
     });
   }, [value, duration, delay]);
 
-  return <span ref={ref}>{prefix}{display.toLocaleString()}{suffix}</span>;
+  return <span ref={ref} className="font-mono">{prefix}{display.toLocaleString()}{suffix}</span>;
 }
 
 // ── 卡片组件 ───────────────────────────────────────────────────────
@@ -168,8 +212,8 @@ function CustomTooltip({ active, payload, label }: any) {
       {payload.map((p: any, i: number) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: p.color }} />
-          <span style={{ color: p.dataKey === 'income' ? css.accentBlue : css.accentGold }}>
-            {p.dataKey === 'income' ? '收入' : '支出'}: ¥{p.value.toLocaleString()}
+          <span className="font-mono" style={{ color: p.dataKey === 'income' ? css.accentBlue : p.dataKey === 'expense' || p.dataKey === 'amount' ? css.accentGold : css.text }}>
+            {p.dataKey === 'income' ? '收入' : p.dataKey === 'expense' ? '支出' : p.dataKey === 'amount' ? '支出' : p.name}: ¥{p.value.toLocaleString()}
           </span>
         </div>
       ))}
@@ -192,6 +236,8 @@ export function Reports() {
   const currentMonthTx = useMemo(() => filterByMonth(transactions, selectedMonth), [transactions, selectedMonth]);
   const categoryData = useMemo(() => calcCategoryRanking(currentMonthTx), [currentMonthTx]);
   const platformData = useMemo(() => calcPlatformDistribution(currentMonthTx), [currentMonthTx]);
+  const dailyExpenseData = useMemo(() => calcDailyExpenseTrend(transactions, selectedMonth), [transactions, selectedMonth]);
+  const lifeStats = useMemo(() => calcLifeInvestmentStats(transactions, selectedMonth), [transactions, selectedMonth]);
 
   const monthIncome = currentMonthTx.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + t.amount, 0);
   const monthExpense = currentMonthTx.filter((t: any) => t.type === 'expense').reduce((s: number, t: any) => s + t.amount, 0);
@@ -201,14 +247,32 @@ export function Reports() {
   const totalIncome = transactions.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + t.amount, 0);
   const totalExpense = transactions.filter((t: any) => t.type === 'expense').reduce((s: number, t: any) => s + t.amount, 0);
 
-  // 入场动画
+  // 滚动监听自动更新 active section
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['summary', 'trend', 'expense', 'income', 'health'];
+      const scrollPos = window.scrollY + 100;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveSection(sections[i]);
+          return;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   useEffect(() => {
     if (!pageRef.current) return;
     const sections = pageRef.current.querySelectorAll('.animate-in');
     gsap.fromTo(
       sections,
       { y: 36, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.65, stagger: 0.1, ease: 'power2.out', delay: 0.1 }
+      { y: 0, opacity: 1, duration: 0.65, stagger: 0.1, ease: 'back.out(1.7)', delay: 0.1 }
     );
   }, [selectedMonth]);
 
@@ -277,7 +341,10 @@ export function Reports() {
       </div>
 
       {/* Sticky 导航 */}
-      <ReportNav activeSection={activeSection} onNavigate={setActiveSection} />
+      <ReportNav activeSection={activeSection} onNavigate={(id) => {
+        setActiveSection(id);
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }} />
 
       {/* 财务摘要卡片 */}
       <div id="summary" className="animate-in" style={{ marginBottom: '12px' }}>
@@ -387,8 +454,7 @@ export function Reports() {
             </PieChart>
           </ResponsiveContainer>
           <div style={{ textAlign: 'center', marginTop: '-8px' }}>
-            <div style={{
-              fontFamily: "'Noto Serif SC', serif",
+            <div className="font-mono" style={{
               fontSize: 'clamp(24px, 3vw, 32px)',
               color: css.text,
               letterSpacing: '-0.02em',
@@ -409,10 +475,10 @@ export function Reports() {
         </Card>
       </div>
 
-      {/* Row 2: 支出分类排行(1fr) + 收入平台分布(2fr) */}
+      {/* Row 2: 支出洞察(2fr) + 收入渠道占比(1fr) */}
       <div id="expense" className="animate-in" style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 2fr',
+        gridTemplateColumns: '2fr 1fr',
         gap: '12px',
         marginBottom: '12px',
       }}>
@@ -445,6 +511,8 @@ export function Reports() {
               {categoryData.map((item, i) => {
                 const maxVal = categoryData[0]?.value || 1;
                 const pct = (item.value / maxVal) * 100;
+                const isInvest = isLifeInvestment(item.name);
+                const color = isInvest ? css.accentGreen : CHART_COLORS[i % CHART_COLORS.length];
                 return (
                   <div key={item.name}>
                     <div style={{
@@ -457,13 +525,18 @@ export function Reports() {
                         fontFamily: "'Noto Sans SC', sans-serif",
                         fontSize: '12px',
                         color: css.text,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
                       }}>
                         {item.name}
+                        {isInvest && (
+                          <span style={{ fontSize: '10px' }}>🌱</span>
+                        )}
                       </span>
-                      <span style={{
-                        fontFamily: "'Noto Serif SC', serif",
+                      <span className="font-mono" style={{
                         fontSize: '13px',
-                        color: CHART_COLORS[i % CHART_COLORS.length],
+                        color,
                       }}>
                         ¥{item.value.toLocaleString()}
                       </span>
@@ -478,9 +551,9 @@ export function Reports() {
                       <div style={{
                         width: `${pct}%`,
                         height: '100%',
-                        background: CHART_COLORS[i % CHART_COLORS.length],
+                        background: color,
                         borderRadius: '3px',
-                        transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        transition: `width 0.8s ${css.spring}`,
                       }} />
                     </div>
                   </div>
@@ -490,17 +563,17 @@ export function Reports() {
           )}
         </Card>
 
-        {/* 收入平台分布 */}
-        <Card style={{ minHeight: '240px' }}>
+        {/* 收入渠道占比 — 缩小为紧凑饼图 */}
+        <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '240px' }}>
           <div style={{
             fontFamily: "'Noto Sans SC', sans-serif",
             fontSize: '13px',
             fontWeight: 500,
             color: css.text,
-            marginBottom: '12px',
+            marginBottom: '8px',
             letterSpacing: '0.05em',
           }}>
-            收入平台分布
+            收入渠道占比
           </div>
           {platformData.length === 0 ? (
             <div style={{
@@ -512,22 +585,24 @@ export function Reports() {
               暂无收入记录
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={platformData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(163,158,148,0.15)" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: css.textSecondary, fontSize: 11, fontFamily: "'Noto Sans SC', sans-serif" }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: css.textSecondary, fontSize: 11, fontFamily: "'Noto Sans SC', sans-serif" }}
-                />
+            <ResponsiveContainer width="100%" height={160}>
+              <PieChart>
+                <Pie
+                  data={platformData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={65}
+                  paddingAngle={4}
+                  dataKey="value"
+                  animationDuration={1200}
+                >
+                  {platformData.map((_e: any, i: number) => (
+                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip
-                  content={({ active, payload, label }: any) => {
+                  content={({ active, payload }: any) => {
                     if (!active || !payload?.length) return null;
                     return (
                       <div style={{
@@ -538,18 +613,129 @@ export function Reports() {
                         fontSize: '12px',
                         color: css.text,
                       }}>
-                        {label}: ¥{payload[0].value.toLocaleString()}
+                        <span className="font-mono">{payload[0].name}: ¥{payload[0].value.toLocaleString()}</span>
                       </div>
                     );
                   }}
                 />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]} animationDuration={1200}>
-                  {platformData.map((_, i) => (
-                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                  ))}
-                </Bar>
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </Card>
+      </div>
+
+      {/* Row 2.5: 日均支出趋势(2fr) + 生活投资占比(1fr) */}
+      <div className="animate-in" style={{
+        display: 'grid',
+        gridTemplateColumns: '2fr 1fr',
+        gap: '12px',
+        marginBottom: '12px',
+      }}>
+        <Card style={{ minHeight: '220px' }}>
+          <div style={{
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '13px',
+            fontWeight: 500,
+            color: css.text,
+            marginBottom: '12px',
+            letterSpacing: '0.05em',
+          }}>
+            日均支出趋势
+          </div>
+          {dailyExpenseData.every((d: any) => d.amount === 0) ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 0',
+              color: css.textSecondary,
+              fontSize: '13px',
+            }}>
+              暂无支出记录
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={dailyExpenseData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(163,158,148,0.15)" vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: css.textSecondary, fontSize: 10, fontFamily: "'Noto Sans SC', sans-serif" }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: css.textSecondary, fontSize: 11, fontFamily: "'Noto Sans SC', sans-serif" }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="amount" radius={[3, 3, 0, 0]} fill={css.accentGold} animationDuration={1200} />
               </BarChart>
             </ResponsiveContainer>
+          )}
+        </Card>
+
+        <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
+          <div style={{
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '13px',
+            fontWeight: 500,
+            color: css.text,
+            marginBottom: '8px',
+            letterSpacing: '0.05em',
+          }}>
+            生活投资占比
+            <WisdomTooltip wisdom="投资自己是回报率最高的事情。设备升级、技能提升、书籍课程——这些支出会在未来产生复利。">
+              <span style={{ marginLeft: '8px', fontSize: '11px', color: '#c9923a', cursor: 'help' }}>?</span>
+            </WisdomTooltip>
+          </div>
+          {lifeStats.totalExpense === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '32px 0',
+              color: css.textSecondary,
+              fontSize: '13px',
+            }}>
+              暂无支出记录
+            </div>
+          ) : (
+            <>
+              <ResponsiveContainer width="100%" height={120}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: '生活投资', value: lifeStats.lifeInvestment },
+                      { name: '普通消费', value: lifeStats.regularExpense },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={35}
+                    outerRadius={55}
+                    paddingAngle={4}
+                    dataKey="value"
+                    animationDuration={1200}
+                  >
+                    <Cell fill={css.accentGreen} />
+                    <Cell fill={css.accentGold} />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="font-mono" style={{
+                fontSize: '22px',
+                color: css.accentGreen,
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+              }}>
+                {lifeStats.ratio.toFixed(1)}%
+              </div>
+              <div style={{
+                fontFamily: "'Noto Sans SC', sans-serif",
+                fontSize: '10px',
+                color: css.textSecondary,
+                marginTop: '4px',
+                letterSpacing: '0.1em',
+              }}>
+                投资占比
+              </div>
+            </>
           )}
         </Card>
       </div>
@@ -580,8 +766,7 @@ export function Reports() {
               boxShadow: css.shadowInset,
               textAlign: 'center',
             }}>
-              <div style={{
-                fontFamily: "'Noto Serif SC', serif",
+              <div className="font-mono" style={{
                 fontSize: 'clamp(28px, 5vw, 40px)',
                 color: css.accentBlue,
                 letterSpacing: '-0.02em',
@@ -608,8 +793,7 @@ export function Reports() {
               boxShadow: css.shadowInset,
               textAlign: 'center',
             }}>
-              <div style={{
-                fontFamily: "'Noto Serif SC', serif",
+              <div className="font-mono" style={{
                 fontSize: 'clamp(22px, 4vw, 32px)',
                 color: css.accentGold,
                 letterSpacing: '-0.02em',
@@ -636,8 +820,7 @@ export function Reports() {
               boxShadow: css.shadowInset,
               textAlign: 'center',
             }}>
-              <div style={{
-                fontFamily: "'Noto Serif SC', serif",
+              <div className="font-mono" style={{
                 fontSize: 'clamp(22px, 4vw, 32px)',
                 color: css.text,
                 letterSpacing: '-0.02em',
@@ -664,8 +847,7 @@ export function Reports() {
               boxShadow: css.shadowInset,
               textAlign: 'center',
             }}>
-              <div style={{
-                fontFamily: "'Noto Serif SC', serif",
+              <div className="font-mono" style={{
                 fontSize: 'clamp(22px, 4vw, 32px)',
                 color: savingsRate >= 0 ? css.accentGreen : css.accentRed,
                 letterSpacing: '-0.02em',
@@ -747,8 +929,7 @@ export function Reports() {
               {/* 财富自由进度 */}
               <Card style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '10px', color: css.textMuted, marginBottom: '8px' }}>财富自由进度</div>
-                <div style={{
-                  fontFamily: "'Noto Serif SC', serif",
+                <div className="font-mono" style={{
                   fontSize: '28px',
                   color: freedomInsight.color,
                 }}>
@@ -776,8 +957,7 @@ export function Reports() {
                     <span style={{ marginLeft: '4px', color: '#c9923a', cursor: 'help' }}>?</span>
                   </WisdomTooltip>
                 </div>
-                <div style={{
-                  fontFamily: "'Noto Serif SC', serif",
+                <div className="font-mono" style={{
                   fontSize: '28px',
                   color: emergencyInsight.color,
                 }}>

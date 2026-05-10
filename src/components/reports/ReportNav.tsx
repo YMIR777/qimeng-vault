@@ -25,16 +25,17 @@ export function ReportNav({ activeSection, onNavigate }: ReportNavProps) {
     }}>
       <div style={{
         display: 'flex',
-        gap: '4px',
+        gap: '8px',
         overflowX: 'auto',
-        padding: '0 4px',
+        padding: '4px 8px',
+        scrollbarWidth: 'none',
       }}>
         {SECTIONS.map(section => (
           <button
             key={section.id}
             onClick={() => onNavigate(section.id)}
             style={{
-              padding: '6px 14px',
+              padding: '6px 16px',
               borderRadius: '20px',
               border: 'none',
               background: activeSection === section.id ? '#f0ebe0' : 'transparent',
@@ -42,9 +43,10 @@ export function ReportNav({ activeSection, onNavigate }: ReportNavProps) {
               fontSize: '12px',
               fontFamily: "'Noto Sans SC', sans-serif",
               cursor: 'pointer',
-              boxShadow: activeSection === section.id ? '2px 2px 4px #cdc5b8, -2px -2px 4px #fffbf5' : 'none',
+              boxShadow: activeSection === section.id ? '3px 3px 6px #cdc5b8, -3px -3px 6px #fffbf5' : 'none',
               transition: 'all 0.2s ease',
               whiteSpace: 'nowrap',
+              outline: 'none',
             }}
           >
             {section.label}
