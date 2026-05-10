@@ -18,7 +18,6 @@ export function WisdomTooltip({ wisdom, children, detail }: WisdomTooltipProps) 
       {children}
       {visible && (
         <div
-          className="liquid-glass"
           style={{
             position: 'absolute',
             bottom: 'calc(100% + 8px)',
@@ -27,11 +26,16 @@ export function WisdomTooltip({ wisdom, children, detail }: WisdomTooltipProps) 
             width: '280px',
             borderRadius: '16px',
             padding: '16px',
-            zIndex: 100,
+            zIndex: 200,
             fontSize: '13px',
             lineHeight: '1.6',
             color: '#3d3427',
             pointerEvents: 'none',
+            background: 'rgba(240, 235, 224, 0.92)',
+            backdropFilter: 'blur(12px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(12px) saturate(140%)',
+            border: '1px solid rgba(255, 251, 245, 0.5)',
+            boxShadow: 'inset 0 1px 0 rgba(255, 251, 245, 0.4), 0 4px 16px rgba(163, 158, 148, 0.15)',
           }}
         >
           <div style={{ fontWeight: 500, marginBottom: '6px', color: '#c9923a', display: 'flex', alignItems: 'center', gap: '6px' }}>
