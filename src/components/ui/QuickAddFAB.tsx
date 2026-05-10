@@ -45,23 +45,34 @@ export function QuickAddFAB() {
         e.currentTarget.style.transform = 'scale(1.12)';
       }}
     >
-      {/* 羽毛笔 SVG — 简洁线条，笔尖朝下，清晰可辨 */}
+      {/* 写实羽毛笔 SVG - 蘸水笔风格 */}
       <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
+        width="28"
+        height="28"
+        viewBox="0 0 32 32"
         fill="none"
         stroke="#c9923a"
-        strokeWidth="1.5"
+        strokeWidth="1.2"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* 笔身 — 简洁的斜线 */}
-        <path d="M17 3L7 13l-2 6 6-2 10-10-4-4z" />
-        {/* 笔尖 */}
-        <path d="M5 21l2-6" />
-        {/* 墨迹点 — 强调"记录"动作 */}
-        <circle cx="8.5" cy="15.5" r="1" fill="#c9923a" stroke="none" />
+        {/* 羽梗主干 — 弧形曲线 */}
+        <path d="M6 30 Q10 20 16 12 Q20 6 26 4" />
+        {/* 羽毛左侧羽片 */}
+        <path d="M6 30 Q8 24 10 20 Q14 14 16 12 Q12 16 8 22 Q6 26 6 30Z" fill="#f5f0e8" strokeWidth="0.8" />
+        {/* 羽毛右侧羽片 */}
+        <path d="M16 12 Q20 8 24 6 Q28 5 30 4 Q26 6 22 10 Q18 14 16 12Z" fill="#f5f0e8" strokeWidth="0.8" />
+        {/* 羽片纹理 — 左侧 */}
+        <path d="M7 28 Q10 24 12 20" strokeWidth="0.7" />
+        <path d="M9 24 Q11 21 13 17" strokeWidth="0.7" />
+        <path d="M11 20 Q13 17 14 14" strokeWidth="0.7" />
+        {/* 羽片纹理 — 右侧 */}
+        <path d="M25 6 Q22 9 18 13" strokeWidth="0.7" />
+        <path d="M23 8 Q20 11 17 14" strokeWidth="0.7" />
+        {/* 笔尖 — 羽梗末端分裂 */}
+        <path d="M6 30 L5 31 L6 31.5 L7 31 Z" fill="#c9923a" strokeWidth="0.5" />
+        <path d="M6 30 L6.5 31.5" strokeWidth="0.8" />
+        <path d="M6 30 L5.5 31" strokeWidth="0.5" />
       </svg>
     </button>
   );
