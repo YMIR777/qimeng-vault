@@ -675,41 +675,7 @@ export function Dashboard() {
           </Link>
         </div>
 
-        {/* 快速记账入口 */}
-        <button
-          onClick={() => magicInputRef.current?.focus()}
-          style={{
-            width: '100%',
-            padding: '16px 20px',
-            background: '#f0ebe0',
-            border: 'none',
-            borderRadius: '18px',
-            boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '10px',
-            transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            fontFamily: "'Noto Sans SC', sans-serif",
-            fontSize: '14px',
-            color: '#3d3427',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '6px 6px 16px #c5bdb0, -6px -6px 16px #fffbf5';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5';
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a9e7e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          <span>快速记账</span>
-        </button>
+        {/* FAB handles quick add now — this button removed */}
       </div>
 
       {/* Budget Progress */}
