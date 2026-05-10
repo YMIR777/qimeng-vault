@@ -5,9 +5,7 @@ export function QuickAddFAB() {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    // Navigate to Dashboard and request MagicInput focus
     navigate('/dashboard');
-    // Small delay to let Dashboard mount before focusing
     setTimeout(() => requestMagicFocus(), 100);
   };
 
@@ -31,9 +29,6 @@ export function QuickAddFAB() {
         justifyContent: 'center',
         zIndex: 9999,
         transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        fontSize: '28px',
-        lineHeight: 1,
-        color: '#c9923a',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'scale(1.12)';
@@ -50,7 +45,25 @@ export function QuickAddFAB() {
         e.currentTarget.style.transform = 'scale(1.12)';
       }}
     >
-      +
+      {/* 羽毛笔 SVG - 记录记账的隐喻，旋转45度模拟书写角度 */}
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#c9923a"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ transform: 'rotate(-45deg)' }}
+      >
+        {/* 羽毛笔身 */}
+        <path d="M20.24 3.76a1.5 1.5 0 0 1 0 2.12L9.5 16.62a1 1 0 0 1-.65.27H5.5a1.5 1.5 0 0 1 0-3h2.12l10.74-10.74a1.5 1.5 0 0 1 2.12 0z" />
+        {/* 羽毛纹理 */}
+        <path d="M12 12l8.5 8.5" />
+        <path d="M17 7l-5 5" />
+        <path d="M19.5 5.5l-4 4" />
+      </svg>
     </button>
   );
 }
