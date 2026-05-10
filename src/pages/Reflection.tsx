@@ -1,9 +1,10 @@
 import { useMemo, useRef, useEffect } from 'react';
 import { useLedger } from '../store/useLedger';
+import { TimeCapsule } from '../components/reflection/TimeCapsule';
 import gsap from 'gsap';
 
 export function Reflection() {
-  const { transactions } = useLedger();
+  const { transactions, updateTransaction } = useLedger();
   const pageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -139,6 +140,9 @@ export function Reflection() {
           </div>
         </div>
       </div>
+
+      {/* Time Capsule */}
+      <TimeCapsule transactions={transactions} updateTransaction={updateTransaction} />
 
       {/* 不值得的支出 */}
       <div className="animate-in" style={{ marginBottom: '28px' }}>
