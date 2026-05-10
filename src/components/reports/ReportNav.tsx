@@ -17,11 +17,12 @@ export function ReportNav({ activeSection, onNavigate }: ReportNavProps) {
       position: 'sticky',
       top: '0',
       zIndex: 50,
-      background: 'rgba(245,240,232,0.92)',
-      backdropFilter: 'blur(8px)',
+      background: 'rgba(245,240,232,0.95)',
+      backdropFilter: 'blur(20px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
       padding: '12px 0',
       marginBottom: '24px',
-      borderBottom: '1px solid rgba(163,158,148,0.15)',
+      borderBottom: '1px solid rgba(163,158,148,0.2)',
     }}>
       <div style={{
         display: 'flex',
