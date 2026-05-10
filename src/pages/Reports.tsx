@@ -139,18 +139,7 @@ function calcCategoryRanking(transactions: any[]) {
     .slice(0, 6);
 }
 
-function calcPlatformDistribution(transactions: any[]) {
-  const incomes = transactions.filter((t: any) => t.type === 'income');
-  const byPlatform: Record<string, number> = {};
-  for (const tx of incomes) {
-    const p = tx.platform || '其他';
-    byPlatform[p] = (byPlatform[p] || 0) + tx.amount;
-  }
-  return Object.entries(byPlatform)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
-}
-
+// ── 新增：收入渠道迷你列表 ────────────────────────────────────────
 // ── 数字滚动组件 ───────────────────────────────────────────────────
 function AnimatedNumber({ value, prefix = '', suffix = '', duration = 1.2, delay = 0 }: {
   value: number; prefix?: string; suffix?: string; duration?: number; delay?: number;
@@ -235,7 +224,7 @@ export function Reports() {
   const monthlyData = useMemo(() => calcMonthlyTrend(transactions), [transactions]);
   const currentMonthTx = useMemo(() => filterByMonth(transactions, selectedMonth), [transactions, selectedMonth]);
   const categoryData = useMemo(() => calcCategoryRanking(currentMonthTx), [currentMonthTx]);
-  const platformData = useMemo(() => calcPlatformDistribution(currentMonthTx), [currentMonthTx]);
+  // const platformMiniData = useMemo(() => calcPlatformMiniList(transactions, selectedMonth), [transactions, selectedMonth]);
   const dailyExpenseData = useMemo(() => calcDailyExpenseTrend(transactions, selectedMonth), [transactions, selectedMonth]);
   const lifeStats = useMemo(() => calcLifeInvestmentStats(transactions, selectedMonth), [transactions, selectedMonth]);
 
@@ -475,14 +464,14 @@ export function Reports() {
         </Card>
       </div>
 
-      {/* Row 2: 支出洞察(2fr) + 收入渠道占比(1fr) */}
+      {/* Row 2: 支出洞察(2fr) + 生活投资占比(1fr) */}
       <div id="expense" className="animate-in" style={{
         display: 'grid',
         gridTemplateColumns: '2fr 1fr',
         gap: '12px',
         marginBottom: '12px',
       }}>
-        {/* 支出分类排行 */}
+        {/* 支出分类排行 - 增强版：含百分比与生活投资标记 */}
         <Card style={{ minHeight: '240px' }}>
           <div style={{
             fontFamily: "'Noto Sans SC', sans-serif",
@@ -491,10 +480,21 @@ export function Reports() {
             color: css.text,
             marginBottom: '16px',
             letterSpacing: '0.05em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
           }}>
-            支出分类排行
+            <span>支出洞察</span>
+            <span style={{
+              fontSize: '10px',
+              color: css.accentGreen,
+              background: 'rgba(122,158,126,0.12)',
+              padding: '2px 8px',
+              borderRadius: '10px',
+              fontWeight: 400,
+            }}>🌱 生活投资已标记</span>
             <WisdomTooltip wisdom="《金钱心理学》作者摩根·豪塞尔说：知道你的钱花在哪里，比知道你怎么花更重要。前者让你发现模式，后者让你分析行为。">
-              <span style={{ marginLeft: '8px', fontSize: '11px', color: '#c9923a', cursor: 'help' }}>?</span>
+              <span style={{ fontSize: '11px', color: '#c9923a', cursor: 'help' }}>?</span>
             </WisdomTooltip>
           </div>
           {categoryData.length === 0 ? (
@@ -509,8 +509,10 @@ export function Reports() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {categoryData.map((item, i) => {
+                const totalExp = monthExpense || 1;
+                const pctOfTotal = (item.value / totalExp) * 100;
                 const maxVal = categoryData[0]?.value || 1;
-                const pct = (item.value / maxVal) * 100;
+                const barPct = (item.value / maxVal) * 100;
                 const isInvest = isLifeInvestment(item.name);
                 const color = isInvest ? css.accentGreen : CHART_COLORS[i % CHART_COLORS.length];
                 return (
@@ -527,18 +529,40 @@ export function Reports() {
                         color: css.text,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
+                        gap: '6px',
                       }}>
+                        <span style={{
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          background: color,
+                          display: 'inline-block',
+                        }} />
                         {item.name}
                         {isInvest && (
-                          <span style={{ fontSize: '10px' }}>🌱</span>
+                          <span style={{
+                            fontSize: '9px',
+                            color: css.accentGreen,
+                            background: 'rgba(122,158,126,0.12)',
+                            padding: '1px 6px',
+                            borderRadius: '8px',
+                            fontWeight: 400,
+                          }}>生活投资</span>
                         )}
                       </span>
-                      <span className="font-mono" style={{
-                        fontSize: '13px',
-                        color,
-                      }}>
-                        ¥{item.value.toLocaleString()}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="font-mono" style={{
+                          fontSize: '11px',
+                          color: css.textMuted,
+                        }}>
+                          {pctOfTotal.toFixed(1)}%
+                        </span>
+                        <span className="font-mono" style={{
+                          fontSize: '13px',
+                          color,
+                        }}>
+                          ¥{item.value.toLocaleString()}
+                        </span>
                       </span>
                     </div>
                     <div style={{
@@ -549,7 +573,7 @@ export function Reports() {
                       overflow: 'hidden',
                     }}>
                       <div style={{
-                        width: `${pct}%`,
+                        width: `${barPct}%`,
                         height: '100%',
                         background: color,
                         borderRadius: '3px',
@@ -563,7 +587,7 @@ export function Reports() {
           )}
         </Card>
 
-        {/* 收入渠道占比 — 缩小为紧凑饼图 */}
+        {/* 生活投资占比 */}
         <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '240px' }}>
           <div style={{
             fontFamily: "'Noto Sans SC', sans-serif",
@@ -573,53 +597,71 @@ export function Reports() {
             marginBottom: '8px',
             letterSpacing: '0.05em',
           }}>
-            收入渠道占比
+            生活投资占比
+            <WisdomTooltip wisdom="投资自己是回报率最高的事情。设备升级、技能提升、书籍课程——这些支出会在未来产生复利。">
+              <span style={{ marginLeft: '8px', fontSize: '11px', color: '#c9923a', cursor: 'help' }}>?</span>
+            </WisdomTooltip>
           </div>
-          {platformData.length === 0 ? (
+          {lifeStats.totalExpense === 0 ? (
             <div style={{
               textAlign: 'center',
-              padding: '48px 0',
+              padding: '32px 0',
               color: css.textSecondary,
               fontSize: '13px',
             }}>
-              暂无收入记录
+              暂无支出记录
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={160}>
-              <PieChart>
-                <Pie
-                  data={platformData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={45}
-                  outerRadius={65}
-                  paddingAngle={4}
-                  dataKey="value"
-                  animationDuration={1200}
-                >
-                  {platformData.map((_e: any, i: number) => (
-                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  content={({ active, payload }: any) => {
-                    if (!active || !payload?.length) return null;
-                    return (
-                      <div style={{
-                        background: css.card,
-                        borderRadius: '10px',
-                        padding: '8px 12px',
-                        boxShadow: css.shadowRaised,
-                        fontSize: '12px',
-                        color: css.text,
-                      }}>
-                        <span className="font-mono">{payload[0].name}: ¥{payload[0].value.toLocaleString()}</span>
-                      </div>
-                    );
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <>
+              <ResponsiveContainer width="100%" height={120}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: '生活投资', value: lifeStats.lifeInvestment },
+                      { name: '普通消费', value: lifeStats.regularExpense },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={35}
+                    outerRadius={55}
+                    paddingAngle={4}
+                    dataKey="value"
+                    animationDuration={1200}
+                  >
+                    <Cell fill={css.accentGreen} />
+                    <Cell fill={css.accentGold} />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="font-mono" style={{
+                fontSize: '22px',
+                color: css.accentGreen,
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+              }}>
+                {lifeStats.ratio.toFixed(1)}%
+              </div>
+              <div style={{
+                fontFamily: "'Noto Sans SC', sans-serif",
+                fontSize: '10px',
+                color: css.textSecondary,
+                marginTop: '4px',
+                letterSpacing: '0.1em',
+              }}>
+                投资占比
+              </div>
+              <div style={{
+                marginTop: '8px',
+                fontSize: '10px',
+                color: css.textMuted,
+                textAlign: 'center',
+                lineHeight: 1.4,
+              }}>
+                本月投资 ¥{lifeStats.lifeInvestment.toLocaleString()}
+                <br />
+                普通消费 ¥{lifeStats.regularExpense.toLocaleString()}
+              </div>
+            </>
           )}
         </Card>
       </div>
