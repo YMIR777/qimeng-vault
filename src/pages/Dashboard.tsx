@@ -168,6 +168,13 @@ export function Dashboard() {
   const pageRef = useRef<HTMLDivElement>(null);
   const magicInputRef = useRef<MagicInputRef>(null);
 
+  // Listen for FAB focus event from other pages
+  useEffect(() => {
+    const handler = () => magicInputRef.current?.focus();
+    window.addEventListener('quickadd:focus', handler);
+    return () => window.removeEventListener('quickadd:focus', handler);
+  }, []);
+
   useEffect(() => {
     if (!pageRef.current) return;
     const sections = pageRef.current.querySelectorAll('.animate-in');

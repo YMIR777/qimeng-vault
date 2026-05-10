@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TabBar } from './components/ui/TabBar';
+import { QuickAddFAB } from './components/ui/QuickAddFAB';
 import { ToastProvider } from './components/ui/Toast';
 import { Dashboard } from './pages/Dashboard';
 import { Wishes } from './pages/Wishes';
@@ -37,6 +38,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>
+          <QuickAddFAB />
           <TabBar />
         </div>
       </ToastProvider>
