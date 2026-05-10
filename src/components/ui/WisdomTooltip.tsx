@@ -26,7 +26,7 @@ export function WisdomTooltip({ wisdom, children, detail }: WisdomTooltipProps) 
             width: '280px',
             borderRadius: '16px',
             padding: '16px',
-            zIndex: 200,
+            zIndex: 9999,
             fontSize: '13px',
             lineHeight: '1.6',
             color: '#3d3427',
