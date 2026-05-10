@@ -55,6 +55,91 @@ export function Workbench() {
     );
   }, []);
 
+  // ── 工作概览 ───────────────────────────────────────
+  const workOverview = useMemo(() => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const monthIncomeTx = transactions.filter(t => t.type === 'income' && t.date >= monthStart);
+    const workDays = new Set(monthIncomeTx.map(t => {
+      const d = new Date(t.date);
+      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    })).size;
+    const maxIncome = incomeTx.length > 0 ? Math.max(...incomeTx.map(t => t.amount)) : 0;
+    const bossCounts: Record<string, number> = {};
+    for (const tx of incomeTx) {
+      if (tx.bossName) bossCounts[tx.bossName] = (bossCounts[tx.bossName] || 0) + 1;
+    }
+    const returningCustomers = Object.values(bossCounts).filter(c => c >= 2).length;
+    const avgOrder = incomeTx.length > 0 ? Math.round(incomeTx.reduce((s, t) => s + t.amount, 0) / incomeTx.length) : 0;
+    return { workDays, maxIncome, returningCustomers, avgOrder, totalCustomers: Object.keys(bossCounts).length };
+  }, [transactions, incomeTx]);
+
+  // ── 时段分析：近7天收入热力图 ───────────────────────
+  const incomeHeatmap = useMemo(() => {
+    const days: { date: string; income: number; isToday: boolean }[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const start = d.getTime();
+      const end = start + 24 * 60 * 60 * 1000;
+      const dayIncome = transactions
+        .filter(t => t.date >= start && t.date < end && t.type === 'income')
+        .reduce((s, t) => s + t.amount, 0);
+      days.push({ date: `${d.getMonth() + 1}/${d.getDate()}`, income: dayIncome, isToday: i === 0 });
+    }
+    return days;
+  }, [transactions]);
+
+  // ── 时段分析：工作时长趋势 ──────────────────────────
+  const timeTrend = useMemo(() => {
+    const days: { date: string; minutes: number }[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const start = d.getTime();
+      const end = start + 24 * 60 * 60 * 1000;
+      const minutes = transactions
+        .filter(t => t.date >= start && t.date < end && t.type === 'income')
+        .reduce((s, t) => s + (t.timeSpent ?? 0), 0);
+      days.push({ date: `${d.getMonth() + 1}/${d.getDate()}`, minutes });
+    }
+    return days;
+  }, [transactions]);
+
+  // ── 客户价值：回头客 vs 新客户 ──────────────────────
+  const customerTypeData = useMemo(() => {
+    const bossCounts: Record<string, number> = {};
+    for (const tx of incomeTx) {
+      if (tx.bossName) bossCounts[tx.bossName] = (bossCounts[tx.bossName] || 0) + 1;
+    }
+    const returning = Object.values(bossCounts).filter(c => c >= 2).length;
+    const newCustomers = Object.values(bossCounts).filter(c => c === 1).length;
+    if (returning === 0 && newCustomers === 0) return [];
+    return [
+      { name: '回头客', value: returning },
+      { name: '新客户', value: newCustomers },
+    ];
+  }, [incomeTx]);
+
+  // ── 客户价值：高价值客户 ────────────────────────────
+  const highValueCustomers = useMemo(() => {
+    const bosses: Record<string, { income: number; count: number }> = {};
+    for (const tx of incomeTx) {
+      if (!tx.bossName) continue;
+      if (!bosses[tx.bossName]) bosses[tx.bossName] = { income: 0, count: 0 };
+      bosses[tx.bossName].income += tx.amount;
+      bosses[tx.bossName].count += 1;
+    }
+    return Object.entries(bosses)
+      .map(([name, data]) => ({ name, ...data }))
+      .filter(b => b.income > 500)
+      .sort((a, b) => b.income - a.income);
+  }, [incomeTx]);
+
   const weekComparison = useMemo(() => {
     const now = new Date();
     const thisWeekStart = new Date(now);
@@ -137,23 +222,6 @@ export function Workbench() {
     })).sort((a, b) => b.income - a.income);
   }, [incomeTx]);
 
-  const heatmap = useMemo(() => {
-    const days: { date: string; net: number; isToday: boolean }[] = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const start = d.getTime();
-      const end = start + 24 * 60 * 60 * 1000;
-      const dayTx = transactions.filter(t => t.date >= start && t.date < end);
-      const income = dayTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-      const expense = dayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-      days.push({ date: `${d.getMonth() + 1}/${d.getDate()}`, net: income - expense, isToday: i === 0 });
-    }
-    return days;
-  }, [transactions]);
-
   const bossRowRefs = useRef<(HTMLDivElement | null)[]>([]);
   useEffect(() => {
     const els = bossRowRefs.current.filter(Boolean);
@@ -210,11 +278,50 @@ export function Workbench() {
           </div>
         </div>
 
-        {/* ── Row 1: 三大指标 ─────────────────────────────── */}
+        {/* ── Row 0: 工作概览（新增）──────────────────────── */}
+        <div ref={reg(0)} style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+          {/* 工作天数 */}
+          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>工作天数</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+              <span style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '42px', color: '#6b9fcf', lineHeight: 1, fontWeight: 400 }}>
+                <AnimatedNumber value={workOverview.workDays} />
+              </span>
+              <span style={{ fontSize: '13px', color: '#a89f8e' }}>天</span>
+            </div>
+            <div style={{ fontSize: '11px', color: '#a89f8e', marginTop: '8px' }}>本月有收入记录</div>
+          </div>
+          {/* 最高单笔 */}
+          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>最高单笔</div>
+            <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '28px', color: '#3d3427' }}>
+              <AnimatedNumber value={workOverview.maxIncome} prefix="¥" />
+            </div>
+          </div>
+          {/* 回头客 */}
+          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>回头客</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+              <span style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '28px', color: '#7a9e7e' }}>
+                <AnimatedNumber value={workOverview.returningCustomers} />
+              </span>
+              <span style={{ fontSize: '12px', color: '#a89f8e' }}>/ {workOverview.totalCustomers}位</span>
+            </div>
+          </div>
+          {/* 平均订单 */}
+          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>平均订单</div>
+            <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '28px', color: '#c9923a' }}>
+              <AnimatedNumber value={workOverview.avgOrder} prefix="¥" />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Row 1: 三大指标（现有）──────────────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: '24px', marginBottom: '24px' }}>
 
           {/* 本周收入 Hero */}
-          <div ref={reg(0)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(1)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>本周收入</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '16px' }}>
               <span style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '52px', color: '#6b9fcf', lineHeight: 1, fontWeight: 400 }}>
@@ -243,7 +350,7 @@ export function Workbench() {
           </div>
 
           {/* 工作时长 */}
-          <div ref={reg(1)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(2)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>工作时长</div>
             {timeStats.totalMin === 0 ? (
               <div style={{ textAlign: 'center', padding: '20px 0', color: '#c5bdb0', fontSize: '13px' }}>暂无工时记录</div>
@@ -273,7 +380,7 @@ export function Workbench() {
           </div>
 
           {/* 今日收支 */}
-          <div ref={reg(2)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(3)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>今日</div>
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '11px', color: '#a89f8e', marginBottom: '4px' }}>收入</div>
@@ -290,38 +397,60 @@ export function Workbench() {
           </div>
         </div>
 
-        {/* ── Row 2: 热力图 ─────────────────────────────── */}
-        <div ref={reg(3)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5', marginBottom: '24px' }}>
-          <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>近7天收支</div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {heatmap.map((day, i) => {
-              const maxNet = Math.max(...heatmap.map(d => Math.abs(d.net))) || 1;
-              const intensity = Math.min(Math.abs(day.net) / maxNet, 1);
-              const isPositive = day.net >= 0;
-              return (
-                <div key={i} style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{
-                    aspectRatio: '1', maxWidth: '80px', margin: '0 auto', borderRadius: '16px',
-                    background: day.net === 0 ? '#e8e1d5' : isPositive ? `rgba(107,159,207,${0.15 + intensity * 0.65})` : `rgba(201,146,58,${0.15 + intensity * 0.65})`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: "'Noto Serif SC', serif", fontSize: '13px',
-                    color: day.net === 0 ? '#c5bdb0' : isPositive ? '#4a7aad' : '#a07030',
-                    transition: `transform 0.3s ${spring}`,
-                  }}>
-                    {day.net !== 0 ? (day.net > 0 ? '+' : '') + day.net : '\u00B7'}
+        {/* ── Row 2: 时段分析（改进+新增）────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px', marginBottom: '24px' }}>
+          {/* 近7天收入热力图 */}
+          <div ref={reg(4)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>近7天收入热力</div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {incomeHeatmap.map((day, i) => {
+                const maxIncome = Math.max(...incomeHeatmap.map(d => d.income)) || 1;
+                const intensity = Math.min(day.income / maxIncome, 1);
+                return (
+                  <div key={i} style={{ flex: 1, textAlign: 'center' }}>
+                    <div style={{
+                      aspectRatio: '1', maxWidth: '80px', margin: '0 auto', borderRadius: '16px',
+                      background: day.income === 0 ? '#e8e1d5' : `rgba(107,159,207,${0.15 + intensity * 0.65})`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: "'Noto Serif SC', serif", fontSize: '13px',
+                      color: day.income === 0 ? '#c5bdb0' : '#4a7aad',
+                      transition: `transform 0.3s ${spring}`,
+                    }}>
+                      {day.income !== 0 ? '+' + day.income : '\u00B7'}
+                    </div>
+                    <div style={{ fontSize: '11px', color: day.isToday ? '#c9923a' : '#a89f8e', marginTop: '8px', fontWeight: day.isToday ? 500 : 400 }}>{day.date}</div>
                   </div>
-                  <div style={{ fontSize: '11px', color: day.isToday ? '#c9923a' : '#a89f8e', marginTop: '8px', fontWeight: day.isToday ? 500 : 400 }}>{day.date}</div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 工作时长趋势 */}
+          <div ref={reg(5)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>工作时长趋势</div>
+            {timeTrend.every(d => d.minutes === 0) ? (
+              <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无工时记录</div>
+            ) : (
+              <div style={{ height: '160px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={timeTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0dbd3" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a89f8e' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: '#a89f8e' }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: '#f5f0e8', border: 'none', borderRadius: '12px', boxShadow: '4px 4px 12px #cdc5b8', fontSize: '12px', color: '#3d3427' }} formatter={(value: any) => [`${value}分`, '时长']} />
+                    <Line type="monotone" dataKey="minutes" stroke="#7a9e7e" strokeWidth={2.5} dot={{ fill: '#7a9e7e', r: 4 }} activeDot={{ fill: '#c9923a', r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ── Row 3: 时薪趋势 + 来源分布 ───────────────── */}
+        {/* ── Row 3: 时薪趋势 + 来源分布（现有）────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '24px', marginBottom: '24px' }}>
 
           {/* 时薪趋势 */}
-          <div ref={reg(4)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(6)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>时薪趋势</div>
             {rateData.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无工时记录</div>
@@ -341,7 +470,7 @@ export function Workbench() {
           </div>
 
           {/* 来源分布 */}
-          <div ref={reg(5)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(7)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>来源分布</div>
             {pieData.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无收入记录</div>
@@ -370,13 +499,20 @@ export function Workbench() {
           </div>
         </div>
 
-        {/* ── Row 4: 老板分析 + 星体 ─────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px' }}>
+        {/* ── Row 4: 客户价值分析（新增）+ 老板分析（现有）── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '24px', marginBottom: '24px' }}>
 
-          {/* 老板分析 */}
-          <div ref={reg(6)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
-            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>
-              老板分析 <span style={{ fontSize: '11px', color: '#6b9fcf', fontFamily: "'Noto Serif SC', serif" }}>{bossAnalysis.length}</span>
+          {/* 老板分析 & 高价值客户 */}
+          <div ref={reg(8)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase' }}>
+                老板分析 <span style={{ fontSize: '11px', color: '#6b9fcf', fontFamily: "'Noto Serif SC', serif" }}>{bossAnalysis.length}</span>
+              </div>
+              {highValueCustomers.length > 0 && (
+                <div style={{ fontSize: '10px', color: '#c9923a', padding: '4px 10px', background: 'rgba(201,146,58,0.08)', borderRadius: '8px' }}>
+                  {highValueCustomers.length} 位高价值客户
+                </div>
+              )}
             </div>
             {bossAnalysis.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无回头老板</div>
@@ -388,15 +524,16 @@ export function Workbench() {
                     padding: '14px 18px', background: '#ece7dc', borderRadius: '14px',
                     boxShadow: 'inset 2px 2px 4px #cdc5b8, inset -2px -2px 4px #fffbf5',
                     transition: `transform 0.2s ${spring}`,
+                    border: highValueCustomers.find(h => h.name === boss.name) ? '1px solid rgba(201,146,58,0.3)' : '1px solid transparent',
                   }}
                     onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.015)')}
                     onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                       <div style={{
-                        width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(107,159,207,0.12)',
+                        width: '36px', height: '36px', borderRadius: '50%', background: highValueCustomers.find(h => h.name === boss.name) ? 'rgba(201,146,58,0.12)' : 'rgba(107,159,207,0.12)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '13px', color: '#6b9fcf', fontFamily: "'Noto Serif SC', serif",
+                        fontSize: '13px', color: highValueCustomers.find(h => h.name === boss.name) ? '#c9923a' : '#6b9fcf', fontFamily: "'Noto Serif SC', serif",
                       }}>{boss.name.charAt(0)}</div>
                       <div>
                         <div style={{ fontSize: '14px', color: '#3d3427', fontWeight: 500 }}>{boss.name}</div>
@@ -404,7 +541,7 @@ export function Workbench() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '15px', color: '#6b9fcf', fontFamily: "'Noto Serif SC', serif" }}>¥{boss.income.toLocaleString()}</div>
+                      <div style={{ fontSize: '15px', color: highValueCustomers.find(h => h.name === boss.name) ? '#c9923a' : '#6b9fcf', fontFamily: "'Noto Serif SC', serif" }}>¥{boss.income.toLocaleString()}</div>
                       {boss.rate > 0 && <div style={{ fontSize: '10px', color: '#b8af9e', marginTop: '2px' }}>¥{boss.rate}/h</div>}
                     </div>
                   </div>
@@ -413,47 +550,79 @@ export function Workbench() {
             )}
           </div>
 
-          {/* 星体进度 */}
-          <div ref={reg(7)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 28px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
-            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>正在攒的星体</div>
-            {closestWish ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-                  <div style={{
-                    width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,146,58,0.12)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
-                  }}>{'\u2605'}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '16px', color: '#3d3427', fontWeight: 500 }}>{closestWish.name}</div>
-                    <div style={{ fontSize: '12px', color: '#a89f8e', marginTop: '4px' }}>
-                      ¥{closestWish.currentBalance.toLocaleString()} / ¥{closestWish.targetPrice.toLocaleString()}
+          {/* 回头客vs新客户 + 星体进度 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* 回头客vs新客户 */}
+            <div ref={reg(9)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5', flex: 1 }}>
+              <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>客户构成</div>
+              {customerTypeData.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无客户数据</div>
+              ) : (
+                <>
+                  <div style={{ height: '140px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={customerTypeData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={4} dataKey="value" stroke="none">
+                          {customerTypeData.map((entry, index) => <Cell key={entry.name} fill={index === 0 ? '#6b9fcf' : '#b8af9e'} />)}
+                        </Pie>
+                        <Tooltip contentStyle={{ background: '#f5f0e8', border: 'none', borderRadius: '12px', boxShadow: '4px 4px 12px #cdc5b8', fontSize: '12px', color: '#3d3427' }} formatter={(value: any, name: any) => [`${value}位`, name]} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '8px' }}>
+                    {customerTypeData.map((entry, index) => (
+                      <div key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: index === 0 ? '#6b9fcf' : '#b8af9e' }} />
+                        <span style={{ fontSize: '11px', color: '#a89f8e' }}>{entry.name} {entry.value}位</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* 星体进度 */}
+            <div ref={reg(10)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 28px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+              <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>正在攒的星体</div>
+              {closestWish ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                    <div style={{
+                      width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,146,58,0.12)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
+                    }}>{'\u2605'}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '16px', color: '#3d3427', fontWeight: 500 }}>{closestWish.name}</div>
+                      <div style={{ fontSize: '12px', color: '#a89f8e', marginTop: '4px' }}>
+                        ¥{closestWish.currentBalance.toLocaleString()} / ¥{closestWish.targetPrice.toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '24px', color: '#c9923a' }}>
+                      <AnimatedNumber value={Math.round((closestWish.currentBalance / closestWish.targetPrice) * 100)} suffix="%" />
                     </div>
                   </div>
-                  <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '24px', color: '#c9923a' }}>
-                    <AnimatedNumber value={Math.round((closestWish.currentBalance / closestWish.targetPrice) * 100)} suffix="%" />
+                  <div style={{ height: '8px', borderRadius: '4px', background: '#e0dbd3', overflow: 'hidden' }}>
+                    <div ref={progressRef} style={{
+                      height: '100%', borderRadius: '4px',
+                      background: `linear-gradient(90deg, #c9923a, #d4a843)`,
+                      width: '0%',
+                    }} />
                   </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                    <span style={{ fontSize: '10px', color: '#a89f8e' }}>{closestWish.currentBalance.toLocaleString()}</span>
+                    <span style={{ fontSize: '10px', color: '#a89f8e' }}>{closestWish.targetPrice.toLocaleString()}</span>
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>
+                  <div style={{ fontSize: '24px', marginBottom: '8px' }}>{'\u2606'}</div>
+                  暂无进行中的星体
                 </div>
-                <div style={{ height: '8px', borderRadius: '4px', background: '#e0dbd3', overflow: 'hidden' }}>
-                  <div ref={progressRef} style={{
-                    height: '100%', borderRadius: '4px',
-                    background: `linear-gradient(90deg, #c9923a, #d4a843)`,
-                    width: '0%',
-                  }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-                  <span style={{ fontSize: '10px', color: '#a89f8e' }}>{closestWish.currentBalance.toLocaleString()}</span>
-                  <span style={{ fontSize: '10px', color: '#a89f8e' }}>{closestWish.targetPrice.toLocaleString()}</span>
-                </div>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>
-                <div style={{ fontSize: '24px', marginBottom: '8px' }}>{'\u2606'}</div>
-                暂无进行中的星体
-              </div>
-            )}
+              )}
+            </div>
           </div>
-
         </div>
+
       </div>
     </div>
   );
