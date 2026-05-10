@@ -12,6 +12,7 @@ import { SupplementForm } from '../components/magic/SupplementForm';
 import { WishPicker } from '../components/wishes/WishPicker';
 import { useToast } from '../components/ui/Toast';
 import { db } from '../store/db';
+import type { MagicInputRef } from '../components/magic/MagicInput';
 
 function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 3);
@@ -165,6 +166,7 @@ export function Dashboard() {
   const { budgets: _budgets } = useBudgets();
   const { showToast } = useToast();
   const pageRef = useRef<HTMLDivElement>(null);
+  const magicInputRef = useRef<MagicInputRef>(null);
 
   useEffect(() => {
     if (!pageRef.current) return;
@@ -318,6 +320,27 @@ export function Dashboard() {
   const todayTx = transactions.filter(t => t.date >= today.getTime());
   const todayIncome = todayTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const todayExpense = todayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+
+  // ── 洞察卡片数据 ──────────────────────────────────────
+  const todayWorkMinutes = todayTx
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + (t.timeSpent || 0), 0);
+  const todayWorkHours = (todayWorkMinutes / 60).toFixed(1);
+
+  const weekStart = new Date();
+  const dayOfWeek = weekStart.getDay();
+  const diff = weekStart.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+  weekStart.setDate(diff);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekIncome = transactions
+    .filter(t => t.type === 'income' && t.date >= weekStart.getTime())
+    .reduce((sum, t) => sum + t.amount, 0);
+  const weekGoal = 2000;
+  const weekProgress = Math.min((weekIncome / weekGoal) * 100, 100);
+
+  const latestWish = [...wishes]
+    .filter(w => w.status === 'building')
+    .sort((a, b) => b.createdAt - a.createdAt)[0];
 
   // Format number with thousands separator and decimal
   const formattedNumber = displayNumber.toLocaleString('zh-CN', {
@@ -484,7 +507,7 @@ export function Dashboard() {
 
       {/* Magic Input */}
       <div className="animate-in" style={{ marginBottom: '36px', padding: '0 8px' }}>
-        <MagicInput onSubmit={handleInputSubmit} />
+        <MagicInput ref={magicInputRef} onSubmit={handleInputSubmit} />
         <p style={{
           textAlign: 'center',
           marginTop: '10px',
@@ -498,6 +521,192 @@ export function Dashboard() {
 
       {/* Account Overview */}
       <AccountOverview />
+
+      {/* Insights — 洞察卡片 */}
+      <div className="animate-in" style={{ marginBottom: '32px' }}>
+        {/* Row 1: 今日工作激励 + 许愿瓶 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: '10px',
+          marginBottom: '10px',
+          alignItems: 'stretch',
+        }}>
+          {/* 今日工作激励 */}
+          <div style={{
+            background: '#f0ebe0',
+            borderRadius: '18px',
+            padding: '20px 18px',
+            boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            minHeight: '110px',
+          }}>
+            <div style={{
+              fontFamily: "'Noto Sans SC', sans-serif",
+              fontSize: '10px',
+              letterSpacing: '0.14em',
+              color: '#a89f8e',
+              marginBottom: '10px',
+            }}>
+              今日已工作 {todayWorkHours} 小时，赚了 <span style={{
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+                fontSize: '13px',
+                color: '#6b9fcf',
+                fontWeight: 500,
+              }}>{todayIncome.toFixed(0)}</span> 元
+            </div>
+            <div style={{
+              fontFamily: "'Noto Sans SC', sans-serif",
+              fontSize: '9px',
+              letterSpacing: '0.1em',
+              color: '#b8af9e',
+              marginBottom: '8px',
+            }}>
+              本周目标
+            </div>
+            <div style={{
+              height: '6px',
+              borderRadius: '3px',
+              background: 'rgba(163,158,148,0.15)',
+              overflow: 'hidden',
+              marginBottom: '6px',
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${weekProgress}%`,
+                borderRadius: '3px',
+                background: '#7a9e7e',
+                transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }} />
+            </div>
+            <div style={{
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+              fontSize: '10px',
+              color: '#7a9e7e',
+            }}>
+              {weekIncome.toFixed(0)} / {weekGoal}
+            </div>
+          </div>
+
+          {/* 许愿瓶快速查看 */}
+          <Link to="/wishes" style={{ textDecoration: 'none' }}>
+            <div style={{
+              background: '#f0ebe0',
+              borderRadius: '18px',
+              padding: '18px 14px',
+              boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              minHeight: '110px',
+              height: '100%',
+              cursor: 'pointer',
+              transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '6px 6px 16px #c5bdb0, -6px -6px 16px #fffbf5';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5';
+            }}
+            >
+              <div style={{
+                fontFamily: "'Noto Sans SC', sans-serif",
+                fontSize: '9px',
+                letterSpacing: '0.12em',
+                color: '#b8af9e',
+                marginBottom: '8px',
+              }}>
+                许愿瓶
+              </div>
+              {latestWish ? (
+                <>
+                  <div style={{
+                    fontFamily: "'Noto Sans SC', sans-serif",
+                    fontSize: '13px',
+                    color: '#3d3427',
+                    marginBottom: '8px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {latestWish.name}
+                  </div>
+                  <div style={{
+                    height: '4px',
+                    borderRadius: '2px',
+                    background: 'rgba(163,158,148,0.15)',
+                    overflow: 'hidden',
+                    marginBottom: '6px',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${Math.min((latestWish.currentBalance / latestWish.targetPrice) * 100, 100)}%`,
+                      borderRadius: '2px',
+                      background: '#c9923a',
+                      transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    }} />
+                  </div>
+                  <div style={{
+                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+                    fontSize: '10px',
+                    color: '#a89f8e',
+                  }}>
+                    {latestWish.currentBalance.toFixed(0)} / {latestWish.targetPrice.toFixed(0)}
+                  </div>
+                </>
+              ) : (
+                <div style={{
+                  fontSize: '11px',
+                  color: '#b8af9e',
+                }}>
+                  暂无进行中的许愿瓶
+                </div>
+              )}
+            </div>
+          </Link>
+        </div>
+
+        {/* 快速记账入口 */}
+        <button
+          onClick={() => magicInputRef.current?.focus()}
+          style={{
+            width: '100%',
+            padding: '16px 20px',
+            background: '#f0ebe0',
+            border: 'none',
+            borderRadius: '18px',
+            boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '14px',
+            color: '#3d3427',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '6px 6px 16px #c5bdb0, -6px -6px 16px #fffbf5';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5';
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a9e7e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>快速记账</span>
+        </button>
+      </div>
 
       {/* Budget Progress */}
       <BudgetProgress transactions={transactions} />

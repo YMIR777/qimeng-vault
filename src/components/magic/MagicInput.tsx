@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import { parseInput } from './parseInput';
 import type { ParseResult } from './parseInput';
 
@@ -6,9 +6,21 @@ interface MagicInputProps {
   onSubmit: (result: ParseResult) => void;
 }
 
-export function MagicInput({ onSubmit }: MagicInputProps) {
+export interface MagicInputRef {
+  focus: () => void;
+}
+
+export const MagicInput = forwardRef<MagicInputRef, MagicInputProps>(function MagicInput({ onSubmit }, ref) {
   const [value, setValue] = useState('');
   const [focused, setFocused] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      textareaRef.current?.focus();
+      textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+  }));
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey && value.trim()) {
@@ -32,6 +44,7 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
         padding: '4px',
       }}>
         <textarea
+          ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onFocus={() => setFocused(true)}
@@ -60,4 +73,4 @@ export function MagicInput({ onSubmit }: MagicInputProps) {
       </div>
     </div>
   );
-}
+});
