@@ -62,7 +62,7 @@ function BudgetProgress({ transactions }: { transactions: any[] }) {
               <span style={{ fontSize: '13px', color: '#3d3427', fontFamily: "'Noto Sans SC', sans-serif" }}>
                 {budget.category}
               </span>
-              <span style={{ fontSize: '13px', color: pct > 80 ? '#d4a0a0' : '#7a9e7e', fontFamily: "'Noto Serif SC', serif" }}>
+              <span style={{ fontSize: '13px', color: pct > 80 ? '#d4a0a0' : '#7a9e7e', fontFamily: "var(--cream-mono)" }}>
                 ¥{used.toLocaleString()} / ¥{budget.amount.toLocaleString()}
               </span>
             </div>
@@ -141,7 +141,7 @@ function AccountOverview() {
               margin: '0 auto 6px',
             }} />
             <div style={{
-              fontFamily: "'Noto Serif SC', serif",
+              fontFamily: "var(--cream-mono)",
               fontSize: '16px',
               color: '#3d3427',
               letterSpacing: '-0.01em',
@@ -468,8 +468,7 @@ export function Dashboard() {
           }}>¥</span>
 
           {/* Integer part — huge display */}
-          <span style={{
-            fontFamily: "'Noto Serif SC', serif",
+          <span className="font-mono" style={{
             fontSize: 'clamp(54px, 14vw, 96px)',
             fontWeight: 400,
             color: '#3d3427',
@@ -481,8 +480,7 @@ export function Dashboard() {
           </span>
 
           {/* Decimal — smaller superscript */}
-          <span style={{
-            fontFamily: "'Noto Serif SC', serif",
+          <span className="font-mono" style={{
             fontSize: 'clamp(22px, 5vw, 32px)',
             fontWeight: 400,
             color: '#7a6d5a',
@@ -651,8 +649,7 @@ export function Dashboard() {
                       transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
                     }} />
                   </div>
-                  <div style={{
-                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+                  <div className="font-mono" style={{
                     fontSize: '10px',
                     color: '#a89f8e',
                   }}>
@@ -731,7 +728,7 @@ export function Dashboard() {
           justifyContent: 'center',
           minHeight: '90px',
         }}>
-          <div style={{
+          <div className="font-mono" style={{
             fontFamily: "'Noto Serif SC', serif",
             fontSize: '24px',
             color: '#6b9fcf',
@@ -758,7 +755,7 @@ export function Dashboard() {
           flexDirection: 'column',
           justifyContent: 'center',
         }}>
-          <div style={{
+          <div className="font-mono" style={{
             fontFamily: "'Noto Serif SC', serif",
             fontSize: '20px',
             color: '#c9923a',
@@ -784,7 +781,7 @@ export function Dashboard() {
           flexDirection: 'column',
           justifyContent: 'center',
         }}>
-          <div style={{
+          <div className="font-mono" style={{
             fontFamily: "'Noto Serif SC', serif",
             fontSize: '20px',
             color: '#3d3427',
@@ -827,16 +824,16 @@ export function Dashboard() {
           }}>查看全部 →</a>
         </div>
         {recentTx.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '36px 24px',
-            color: '#c5bdb0',
-            background: '#f0ebe0',
-            borderRadius: '16px',
-            boxShadow: 'inset 4px 4px 8px #cdc5b8, inset -4px -4px 8px #fffbf5',
-          }}>
-            <div style={{ fontSize: '14px', marginBottom: '6px', color: '#a89f8e' }}>暂无记账记录</div>
-            <div style={{ fontSize: '12px', color: '#c5bdb0' }}>尝试输入「比心 150」或「打车 30」</div>
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </div>
+            <div className="empty-state-title">暂无记账记录</div>
+            <div className="empty-state-hint">尝试输入「比心 150」或「打车 30」</div>
           </div>
         ) : (
           <div style={{
@@ -876,7 +873,7 @@ export function Dashboard() {
                     {tx.bossName ? <span>· {tx.bossName}</span> : ''}
                   </span>
                 </div>
-                <div style={{
+                <div className="font-mono" style={{
                   fontFamily: "'Noto Serif SC', serif",
                   fontSize: '16px',
                   color: tx.type === 'income' ? '#6b9fcf' : '#c9923a',

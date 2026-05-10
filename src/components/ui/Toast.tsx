@@ -40,18 +40,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         pointerEvents: 'none',
       }}>
         {toasts.map(toast => (
-          <div key={toast.id} style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
+          <div key={toast.id} className="animate-fade-slide-up liquid-glass" style={{
             borderRadius: '12px',
             padding: '10px 20px',
-            color: toast.type === 'success' ? 'var(--accent-blue)' : toast.type === 'error' ? 'var(--accent-red)' : 'var(--text-secondary)',
+            color: toast.type === 'success' ? 'var(--cream-accent-blue)' : toast.type === 'error' ? 'var(--cream-accent-red)' : 'var(--cream-text-secondary)',
             fontFamily: 'var(--font-body)',
             fontSize: '14px',
             letterSpacing: '0.05em',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-            backdropFilter: 'blur(12px)',
-            animation: 'fadeInUp 0.3s ease',
+            boxShadow: '0 4px 20px rgba(163, 158, 148, 0.25)',
+            pointerEvents: 'none',
           }}>
             {toast.message}
           </div>

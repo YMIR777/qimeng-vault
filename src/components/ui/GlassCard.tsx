@@ -9,13 +9,11 @@ interface GlassCardProps {
 export function GlassCard({ children, className = '', onClick }: GlassCardProps) {
   return (
     <div
-      className={className}
+      className={`liquid-glass card-hover ${className}`}
       onClick={onClick}
       style={{
-        background: 'var(--glass-bg)',
-        border: '1px solid var(--glass-border)',
-        borderRadius: '16px',
-        padding: '20px',
+        borderRadius: '24px',
+        padding: '32px',
         cursor: onClick ? 'pointer' : undefined,
       }}
     >

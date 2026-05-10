@@ -83,6 +83,7 @@ export function TabBar() {
           <Link
             key={tab.path}
             to={tab.path}
+            className="btn-tactile"
             style={{
               flex: 1,
               display: 'flex',

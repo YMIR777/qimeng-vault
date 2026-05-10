@@ -26,7 +26,7 @@ function AnimatedNumber({ value, prefix = '', suffix = '', duration = 1.2, delay
     const obj = { val: 0 };
     gsap.to(obj, { val: value, duration, delay, ease: 'power2.out', onUpdate: () => setDisplay(Math.round(obj.val)) });
   }, [value, duration, delay]);
-  return <span ref={ref}>{prefix}{display.toLocaleString()}{suffix}</span>;
+  return <span ref={ref} className="font-mono">{prefix}{display.toLocaleString()}{suffix}</span>;
 }
 
 export function Workbench() {
@@ -294,7 +294,7 @@ export function Workbench() {
           {/* 最高单笔 */}
           <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>最高单笔</div>
-            <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '28px', color: '#3d3427' }}>
+            <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '28px', color: '#3d3427' }}>
               <AnimatedNumber value={workOverview.maxIncome} prefix="¥" />
             </div>
           </div>
@@ -302,7 +302,7 @@ export function Workbench() {
           <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>回头客</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-              <span style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '28px', color: '#7a9e7e' }}>
+              <span className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '28px', color: '#7a9e7e' }}>
                 <AnimatedNumber value={workOverview.returningCustomers} />
               </span>
               <span style={{ fontSize: '12px', color: '#a89f8e' }}>/ {workOverview.totalCustomers}位</span>
@@ -311,7 +311,7 @@ export function Workbench() {
           {/* 平均订单 */}
           <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>平均订单</div>
-            <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '28px', color: '#c9923a' }}>
+            <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '28px', color: '#c9923a' }}>
               <AnimatedNumber value={workOverview.avgOrder} prefix="¥" />
             </div>
           </div>
@@ -331,20 +331,20 @@ export function Workbench() {
             <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: '12px', color: '#a89f8e', marginBottom: '2px' }}>净增</div>
-                <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '18px', color: '#3d3427' }}>
+                <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '18px', color: '#3d3427' }}>
                   ¥{weekComparison.thisWeek.net.toLocaleString()}
                 </div>
               </div>
               <div style={{ width: '1px', height: '32px', background: '#e0dbd3' }} />
               <div>
                 <div style={{ fontSize: '12px', color: '#a89f8e', marginBottom: '2px' }}>上周</div>
-                <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '18px', color: '#c5bdb0' }}>
+                <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '18px', color: '#c5bdb0' }}>
                   +¥{weekComparison.lastWeek.income.toLocaleString()}
                 </div>
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '20px', background: weekComparison.incomeChange >= 0 ? 'rgba(107,159,207,0.1)' : 'rgba(201,146,58,0.1)' }}>
                 <span style={{ fontSize: '14px', color: weekComparison.incomeChange >= 0 ? '#6b9fcf' : '#c9923a' }}>{weekComparison.incomeChange >= 0 ? '\u25B2' : '\u25BC'}</span>
-                <span style={{ fontSize: '14px', color: weekComparison.incomeChange >= 0 ? '#6b9fcf' : '#c9923a', fontFamily: "'Noto Serif SC', serif" }}>{Math.abs(weekComparison.incomeChange).toFixed(0)}%</span>
+                <span className="font-mono" style={{ fontSize: '14px', color: weekComparison.incomeChange >= 0 ? '#6b9fcf' : '#c9923a', fontFamily: "var(--cream-mono)" }}>{Math.abs(weekComparison.incomeChange).toFixed(0)}%</span>
               </div>
             </div>
           </div>
@@ -353,7 +353,15 @@ export function Workbench() {
           <div ref={reg(2)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>工作时长</div>
             {timeStats.totalMin === 0 ? (
-              <div style={{ textAlign: 'center', padding: '20px 0', color: '#c5bdb0', fontSize: '13px' }}>暂无工时记录</div>
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+                <div className="empty-state-title">暂无工时记录</div>
+              </div>
             ) : (
               <>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '14px' }}>
@@ -384,13 +392,13 @@ export function Workbench() {
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>今日</div>
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '11px', color: '#a89f8e', marginBottom: '4px' }}>收入</div>
-              <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '26px', color: '#6b9fcf' }}>
+              <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '26px', color: '#6b9fcf' }}>
                 +<AnimatedNumber value={todayIncome.income} />
               </div>
             </div>
             <div>
               <div style={{ fontSize: '11px', color: '#a89f8e', marginBottom: '4px' }}>支出</div>
-              <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '26px', color: '#c9923a' }}>
+              <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '26px', color: '#c9923a' }}>
                 -<AnimatedNumber value={todayIncome.expense} />
               </div>
             </div>
@@ -429,7 +437,15 @@ export function Workbench() {
           <div ref={reg(5)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>工作时长趋势</div>
             {timeTrend.every(d => d.minutes === 0) ? (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无工时记录</div>
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+                <div className="empty-state-title">暂无工时记录</div>
+              </div>
             ) : (
               <div style={{ height: '160px' }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -453,7 +469,17 @@ export function Workbench() {
           <div ref={reg(6)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>时薪趋势</div>
             {rateData.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无工时记录</div>
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 3v18h18"/>
+                    <path d="M18 17V9"/>
+                    <path d="M13 17V5"/>
+                    <path d="M8 17v-3"/>
+                  </svg>
+                </div>
+                <div className="empty-state-title">暂无工时记录</div>
+              </div>
             ) : (
               <div style={{ height: '200px' }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -473,7 +499,15 @@ export function Workbench() {
           <div ref={reg(7)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>来源分布</div>
             {pieData.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无收入记录</div>
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                  </svg>
+                </div>
+                <div className="empty-state-title">暂无收入记录</div>
+              </div>
             ) : (
               <>
                 <div style={{ height: '160px' }}>
@@ -515,7 +549,15 @@ export function Workbench() {
               )}
             </div>
             {bossAnalysis.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '32px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无回头老板</div>
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <div className="empty-state-title">暂无回头老板</div>
+              </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {bossAnalysis.slice(0, 4).map((boss, i) => (
@@ -556,7 +598,17 @@ export function Workbench() {
             <div ref={reg(9)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5', flex: 1 }}>
               <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>客户构成</div>
               {customerTypeData.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px 0', color: '#c5bdb0', fontSize: '14px' }}>暂无客户数据</div>
+                <div className="empty-state">
+                  <div className="empty-state-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                  </div>
+                  <div className="empty-state-title">暂无客户数据</div>
+                </div>
               ) : (
                 <>
                   <div style={{ height: '140px' }}>
@@ -597,7 +649,7 @@ export function Workbench() {
                         ¥{closestWish.currentBalance.toLocaleString()} / ¥{closestWish.targetPrice.toLocaleString()}
                       </div>
                     </div>
-                    <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '24px', color: '#c9923a' }}>
+                    <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '24px', color: '#c9923a' }}>
                       <AnimatedNumber value={Math.round((closestWish.currentBalance / closestWish.targetPrice) * 100)} suffix="%" />
                     </div>
                   </div>
@@ -614,9 +666,13 @@ export function Workbench() {
                   </div>
                 </>
               ) : (
-                <div style={{ textAlign: 'center', padding: '48px 0', color: '#c5bdb0', fontSize: '14px' }}>
-                  <div style={{ fontSize: '24px', marginBottom: '8px' }}>{'\u2606'}</div>
-                  暂无进行中的星体
+                <div className="empty-state">
+                  <div className="empty-state-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </div>
+                  <div className="empty-state-title">暂无进行中的星体</div>
                 </div>
               )}
             </div>

@@ -492,7 +492,18 @@ export function Reports() {
               padding: '2px 8px',
               borderRadius: '10px',
               fontWeight: 400,
-            }}>🌱 生活投资已标记</span>
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={css.accentGreen} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22c4.97-4.97 4.97-13.03 0-18-4.97 4.97-4.97 13.03 0 18z"/>
+                <path d="M12 8v8"/>
+                <path d="M12 12l2.5-2.5"/>
+                <path d="M12 12l-2.5-2.5"/>
+              </svg>
+              生活投资已标记
+            </span>
             <WisdomTooltip wisdom="《金钱心理学》作者摩根·豪塞尔说：知道你的钱花在哪里，比知道你怎么花更重要。前者让你发现模式，后者让你分析行为。">
               <span style={{ fontSize: '11px', color: '#c9923a', cursor: 'help' }}>?</span>
             </WisdomTooltip>

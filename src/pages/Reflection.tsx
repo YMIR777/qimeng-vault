@@ -83,8 +83,8 @@ export function Reflection() {
           padding: '22px 18px',
           boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
         }}>
-          <div style={{
-            fontFamily: "'Noto Serif SC', serif",
+          <div className="font-mono" style={{
+            fontFamily: "var(--cream-mono)",
             fontSize: '32px',
             color: '#6b9fcf',
             lineHeight: 1.1,
@@ -122,8 +122,8 @@ export function Reflection() {
           padding: '22px 18px',
           boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
         }}>
-          <div style={{
-            fontFamily: "'Noto Serif SC', serif",
+          <div className="font-mono" style={{
+            fontFamily: "var(--cream-mono)",
             fontSize: '24px',
             color: '#c9923a',
             lineHeight: 1.1,
@@ -205,7 +205,7 @@ export function Reflection() {
                   }}>
                     {tx.note || tx.category || '未分类'}
                   </div>
-                  <div style={{
+                  <div className="font-mono" style={{
                     fontFamily: "'Noto Serif SC', serif",
                     fontSize: '15px',
                     color: '#c9923a',
@@ -298,7 +298,7 @@ export function Reflection() {
                   }}>
                     {tx.note || tx.category || '未分类'}
                   </div>
-                  <div style={{
+                  <div className="font-mono" style={{
                     fontFamily: "'Noto Serif SC', serif",
                     fontSize: '15px',
                     color: '#6b9fcf',
