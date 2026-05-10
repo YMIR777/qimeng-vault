@@ -733,7 +733,7 @@ export function Reports() {
         const freedomInsight = useMemo(() => getFreedomProgressInsight(freedomProgress), [freedomProgress]);
         const emergencyInsight = useMemo(() => getEmergencyFundInsight(emergencyMonths), [emergencyMonths]);
         return (
-          <div className="animate-in" style={{ marginBottom: '12px' }}>
+          <div id="health" className="animate-in" style={{ marginBottom: '12px' }}>
             <div style={{
               fontFamily: "'Noto Sans SC', sans-serif",
               fontSize: '13px',
