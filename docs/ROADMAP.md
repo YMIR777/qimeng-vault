@@ -38,6 +38,8 @@
 | 页面过渡动画 | src/styles/global.css + App.tsx | ✅ 完全实现 | 2026-05-11 |
 | Liquid Glass 效果增强 | src/index.css | ✅ 完全实现 | 2026-05-11 |
 | Wish 页面（欲望星体） | src/pages/Wishes.tsx | ✅ 完全实现 | 2026-05-09 |
+| 多账户管理（含账户选择、默认账户智能初始化） | src/store/db.ts, src/components/magic/SupplementForm.tsx | ✅ 完全实现 | 2026-05-09 |
+| 预算系统（预算设置、进度追踪、超额提醒） | src/store/useBudgets.ts, src/pages/Settings.tsx, src/pages/Dashboard.tsx | ✅ 完全实现 | 2026-05-09 |
 | Records 页面（记录） | src/pages/Records.tsx | ✅ 存在（数据未完全连接） | — |
 | Settings 页面 | src/pages/Settings.tsx | ✅ 存在（基础） | — |
 | Toast 通知系统 | src/components/ui/Toast.tsx | ✅ 完全实现 | 2026-05-10 |
@@ -48,109 +50,35 @@
 
 ## 三、未完成功能（按优先级）
 
-### 🔴 高优先级
+### 🔴 高优先级（暂缓，等收入稳定后再开发）
 
-#### 1. 多账户管理
-**需求来源：** gap-analysis.md + 用户实际场景  
-**用户痛点：** 陪玩收入分散在多个平台（微信、支付宝、银行卡），不知道每个账户具体有多少钱  
-**设计状态：** 已有完整设计文档（docs/plans/2026-05-09-gap-analysis.md）  
-**实现状态：** ❌ 未实现  
-**核心数据结构：**
-```typescript
-interface Account {
-  id: string;
-  name: string;        // "微信钱包"
-  type: 'wechat' | 'alipay' | 'bank' | 'cash' | 'platform';
-  balance: number;     // 当前余额
-  color: string;       // 标识色
-  icon: string;        // SVG 图标
-  createdAt: number;
-}
-```
-**需要的改动：**
-- Transaction 表增加 `accountId` 字段
-- Dashboard 资产卡片 → 显示各账户余额 + 总资产
-- 魔法输入框解析后弹出账户选择
-- 新增账户间转账功能
-- 新增账户管理页面
-
-**预估工作量：** 1-2 天  
-**前置条件：** 无
-
----
-
-#### 2. 预算系统
-**需求来源：** gap-analysis.md  
-**用户痛点：** 花钱没节制，超预算了才知道  
-**设计状态：** 文档中有方案设计（gap-analysis.md Task 2）  
-**实现状态：** ❌ 未实现  
-**核心数据结构：**
-```typescript
-interface Budget {
-  id: string;
-  category: string;     // "餐饮"
-  amount: number;       // 月度预算额
-  period: 'monthly';    // 可扩展 weekly/yearly
-}
-```
-**UI：**
-- Dashboard 或 Reports 增加"预算进度"区块
-- 环形进度条：已用 / 预算
-- 超预算时颜色变红 + 提示
-
-**预估工作量：** 半天到一天  
-**前置条件：** 分类系统已存在 ✅
-
----
-
-### 🟡 中优先级
-
-#### 3. 周期性记账（自动记账）
+#### 1. 周期性记账（自动记账）
 **需求来源：** gap-analysis.md  
 **用户场景：** "房租每月1号扣1500"、"iCloud订阅每月扣21"  
-**设计状态：** 文档中有方案（gap-analysis.md Task 3）  
+**设计状态：** 文档中有方案  
 **实现状态：** ❌ 未实现  
-**核心数据结构：**
-```typescript
-interface Recurring {
-  id: string;
-  name: string;
-  amount: number;
-  type: 'income' | 'expense';
-  category?: string;
-  accountId?: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
-  startDate: number;
-  endDate?: number;
-}
-```
-**执行逻辑：** 每次打开应用时检查需要生成哪些周期性交易
-
 **预估工作量：** 1-2 天  
 **前置条件：** 多账户（因为要关联账户）
 
 ---
 
-#### 4. 标签系统
+#### 2. 标签系统
 **需求来源：** gap-analysis.md  
 **与分类的区别：** 分类是单维度，标签是多维度（"出差"、"春节"、"帮朋友代付"）  
-**一个交易可以有多个标签**，方便跨分类统计  
-**设计状态：** 只有概述，没有详细设计  
 **实现状态：** ❌ 未实现  
 **预估工作量：** 半天
 
 ---
 
-#### 5. 债务/借贷追踪
+#### 3. 债务/借贷追踪
 **需求来源：** gap-analysis.md  
 **用户场景：** "借给朋友500，还没还"、"欠室友200电费"  
-**实现：** 新增"借贷"交易类型，有借款人和还款状态  
 **实现状态：** ❌ 未实现  
 **预估工作量：** 中等
 
 ---
 
-### 🟢 低优先级（锦上添花）
+### 🟡 中优先级（锦上添花）
 
 #### 6. 云端备份 + 多设备同步
 **现状：** 只有本地 IndexedDB + JSON 导出  
@@ -186,8 +114,10 @@ interface Recurring {
 | 原文件 | 归档原因 |
 |--------|----------|
 | docs/archived/2026-05-07-dashboard-v0-design.md | Dashboard 已完全实现并超越原设计，设计文档过时 |
-| docs/archived/2026-05-07-dashboard-v0-implementation.md | 761行实现计划，Dashboard 已完成并已多次迭代 |
+| docs/archived/2026-05-07-dashboard-v0-implementation.md | Dashboard 实现计划，761行，已完成并多次迭代 |
 | docs/archived/2026-05-07-workbench-v1-implementation.md | Workbench 已实现洞察系统，但原计划部分内容（如热力图）未实现，保留供参考 |
+| docs/archived/2026-05-10-multi-page-optimization.md | 内容已全部实现，文档过时 |
+| docs/archived/2026-10-reports-extension.md | 内容已全部实现，文档过时 |
 
 ---
 
@@ -205,40 +135,43 @@ interface Recurring {
 
 ---
 
-## 六、推荐的开发路线
+## 六、推荐路线图
 
-### 短期（解决最痛的问题）
+> 多账户管理和预算系统已实现（✅），以下路线图基于"已实现"调整：
+
+### 短期（完善体验，解决剩余痛点）
 
 ```
-多账户管理 → 预算系统 → 周期性记账
+周期性记账 → 标签系统 → 债务追踪
 ```
 
 **理由：**
-1. 多账户解决"不知道各账户余额"的核心痛点
-2. 预算系统帮助在小收入情况下合理分配
-3. 周期性记账减少重复操作
+1. 周期性记账减少重复操作（每月固定支出自动记录）
+2. 标签系统让消费记录更多维（出差、春节等场景标签）
+3. 债务追踪管理借出/借入，避免遗忘
 
-### 中期（完善体验）
+### 中期（对外发布，跨设备）
 
 ```
-标签系统 → 债务追踪 → 云端备份 → PWA
+云端备份 → PWA打包 → 移动端深度优化
 ```
 
 ### 长期（锦上添花）
 
 ```
-投资追踪 → 移动端深度优化 → 更多图表类型
+投资追踪 → 更多图表类型（Sankey资金流向、年度复盘日历）
 ```
 
 ---
 
 ## 七、当务之急
 
-**如果现在要继续开发，优先级是：**
+**已完成最核心功能。如果现在要继续开发，优先级是：**
 
-1. **多账户管理** — 最痛点，实现后所有收入/支出都绑定账户，资产视图清晰
-2. **Dashboard 数据连通性** — 让 Dashboard 显示真实数据，TimeCapsule 演示数据真实化
+1. **周期性记账** — 减少每月重复记账操作（固定支出自动记录）
+2. **标签系统** — 让消费记录更多维（出差、春节等场景标签）
 3. **移动端适配** — 让手机也能用
+4. **Records 数据连通性** — 让记录页面显示真实数据
 
 ---
 
