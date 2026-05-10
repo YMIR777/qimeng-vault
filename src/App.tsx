@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { TabBar } from './components/ui/TabBar';
 import { QuickAddFAB } from './components/ui/QuickAddFAB';
 import { ToastProvider } from './components/ui/Toast';
@@ -12,6 +13,27 @@ import IntroPage from './pages/IntroPage';
 import Settings from './pages/Settings';
 import GoalSettings from './components/goals/GoalSettings';
 import './styles/global.css';
+
+// Page transition wrapper — applies fade-slide animation on route change
+function PageContent({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const [animating, setAnimating] = useState(false);
+
+  useEffect(() => {
+    setAnimating(true);
+    const t = setTimeout(() => setAnimating(false), 300);
+    return () => clearTimeout(t);
+  }, [location.pathname]);
+
+  return (
+    <div
+      className={animating ? 'page-fade-in' : ''}
+      style={{ flex: 1, paddingBottom: '80px' }}
+    >
+      {children}
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -27,7 +49,7 @@ function App() {
             flexDirection: 'column',
           }}
         >
-          <div style={{ flex: 1, paddingBottom: '80px' }}>
+          <PageContent>
             <Routes>
               <Route path="/" element={<IntroPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -39,7 +61,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/goals" element={<GoalSettings />} />
             </Routes>
-          </div>
+          </PageContent>
           <QuickAddFAB />
           <TabBar />
         </div>

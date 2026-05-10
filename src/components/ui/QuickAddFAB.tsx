@@ -1,9 +1,19 @@
+import { useNavigate } from 'react-router-dom';
 import { requestMagicFocus } from '../../utils/focusChannel';
 
 export function QuickAddFAB() {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    // Navigate to Dashboard and request MagicInput focus
+    navigate('/dashboard');
+    // Small delay to let Dashboard mount before focusing
+    setTimeout(() => requestMagicFocus(), 100);
+  };
+
   return (
     <button
-      onClick={() => requestMagicFocus()}
+      onClick={handleClick}
       aria-label="快速记账"
       style={{
         position: 'fixed',
