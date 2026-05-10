@@ -10,13 +10,13 @@ export function WisdomTooltip({ wisdom, children, detail }: WisdomTooltipProps) 
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
+  // getBoundingClientRect already returns viewport-relative coords
+  // position:fixed uses viewport coords directly, no scroll offset needed
   const handleMouseEnter = (e: React.MouseEvent) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const scrollY = window.scrollY;
-    const scrollX = window.scrollX;
     setPos({
-      x: rect.left + rect.width / 2 + scrollX,
-      y: rect.bottom + scrollY + 10,
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 10,
     });
     setVisible(true);
   };
