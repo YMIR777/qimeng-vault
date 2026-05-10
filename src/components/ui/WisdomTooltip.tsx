@@ -46,10 +46,12 @@ export function WisdomTooltip({ wisdom, children, detail }: WisdomTooltipProps) 
             color: '#3d3427',
             pointerEvents: 'none',
             background: 'rgba(245, 240, 232, 0.98)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            backdropFilter: 'blur(24px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(200%)',
             border: '1px solid rgba(255, 251, 245, 0.8)',
-            boxShadow: '0 12px 40px rgba(163, 158, 148, 0.35), inset 0 1px 0 rgba(255, 251, 245, 0.6)',
+            boxShadow: '0 12px 40px rgba(163, 158, 148, 0.35), inset 0 2px 0 rgba(255, 251, 245, 0.5)',
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 0.3s ease, backdrop-filter 0.3s ease',
           }}
         >
           <div style={{ fontWeight: 500, marginBottom: '6px', color: '#c9923a', display: 'flex', alignItems: 'center', gap: '6px' }}>
