@@ -273,19 +273,20 @@ export function Dashboard() {
         note: pendingExpense.note,
         date: Date.now(),
         accountId: pendingExpense.accountId,
+        tags: (pendingExpense as any).tags,
       });
       showToast(`${pendingExpense.amount} 元（支出）· ${judgment === 'worthy' ? '值得' : '不值'}`, 'success');
       setPendingExpense(null);
     }
   }
 
-  async function handleSupplementConfirm(result: ParseResult & { accountId?: string }) {
+  async function handleSupplementConfirm(result: ParseResult & { accountId?: string; tags?: string[] }) {
     setShowSupplement(false);
     if (!pendingIncomplete && !pendingExpense) return;
 
     // 支出类型：保存完整结果后弹出值得/不值得判断
     if (result.type === 'expense') {
-      setPendingExpense(result);
+      setPendingExpense({ ...result, tags: result.tags } as ParseResult);
       setShowDecision(true);
       return;
     }

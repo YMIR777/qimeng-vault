@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ParseResult } from './parseInput';
+import { TagPicker } from '../tags/TagPicker';
 
 interface AccountOption {
   id: string;
@@ -10,7 +11,7 @@ interface AccountOption {
 interface SupplementFormProps {
   initial: ParseResult;
   accounts: AccountOption[];
-  onConfirm: (result: ParseResult & { accountId?: string }) => void;
+  onConfirm: (result: ParseResult & { accountId?: string; tags?: string[] }) => void;
   onCancel: () => void;
 }
 
@@ -34,6 +35,9 @@ export function SupplementForm({ initial, accounts, onConfirm, onCancel }: Suppl
   const [timeSpent, setTimeSpent] = useState(initial.timeSpent || 0);
   const [amount, setAmount] = useState(String(initial.amount));
   const [accountId, setAccountId] = useState('');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+
+  // 重置标签
 
   // 智能默认：根据平台选择账户
   const getDefaultAccount = () => {
@@ -44,7 +48,7 @@ export function SupplementForm({ initial, accounts, onConfirm, onCancel }: Suppl
 
   function handleConfirm() {
     const selectedAccount = accountId || getDefaultAccount();
-    const result: ParseResult & { accountId?: string } = {
+    const result: ParseResult & { accountId?: string; tags?: string[] } = {
       ...initial,
       type: type!,
       platform: platform || undefined,
@@ -55,7 +59,9 @@ export function SupplementForm({ initial, accounts, onConfirm, onCancel }: Suppl
       complete: true,
       missingFields: [],
       accountId: selectedAccount || undefined,
+      tags: selectedTagIds,
     };
+    setSelectedTagIds([]);
     onConfirm(result);
   }
 
@@ -219,6 +225,14 @@ export function SupplementForm({ initial, accounts, onConfirm, onCancel }: Suppl
                     >{a.name}</button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* 标签（支出） */}
+            {(type === 'expense') && (
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '0.1em' }}>标签</label>
+                <TagPicker selectedIds={selectedTagIds} onChange={setSelectedTagIds} />
               </div>
             )}
           </>
