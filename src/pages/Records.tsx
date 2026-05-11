@@ -533,6 +533,26 @@ export function Records() {
                         {tx.judgment === 'worthy' ? '值得' : '不值'}
                       </span>
                     )}
+                    {(tx.tags || []).map(tagId => {
+                      const tag = allTags.find(t => t.id === tagId);
+                      if (!tag) return null;
+                      return (
+                        <span key={tagId} style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          fontSize: '9px',
+                          color: tag.color,
+                          background: `${tag.color}18`,
+                          border: `1px solid ${tag.color}40`,
+                        }}>
+                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: tag.color, flexShrink: 0 }} />
+                          {tag.name}
+                        </span>
+                      );
+                    })}
                   </span>
                 </div>
 

@@ -1,6 +1,8 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useLedger } from '../store/useLedger';
 import { useWishes } from '../store/useWishes';
+import { useDebts } from '../store/useDebts';
+import { DebtModal } from '../components/debts/DebtModal';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -32,6 +34,8 @@ function AnimatedNumber({ value, prefix = '', suffix = '', duration = 1.2, delay
 export function Workbench() {
   const { transactions } = useLedger();
   const { wishes } = useWishes();
+  const { activeDebts, settleDebt, addDebt } = useDebts();
+  const [showDebtModal, setShowDebtModal] = useState(false);
   const [activePeriod, setActivePeriod] = useState<'all' | 'month' | 'week'>('all');
   const pageRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -679,7 +683,131 @@ export function Workbench() {
           </div>
         </div>
 
+        {/* ── 人情账本 ──────────────────────────────────── */}
+        <div style={{
+          background: '#f5f0e8',
+          borderRadius: '24px',
+          padding: '28px 32px',
+          boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5',
+          marginBottom: '24px',
+        }}>
+          <div style={{
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e',
+            textTransform: 'uppercase', marginBottom: '20px',
+          }}>
+            人情账本
+          </div>
+
+          {activeDebts.length === 0 ? (
+            <div style={{
+              textAlign: 'center', padding: '32px 0',
+              color: '#b8af9e', fontSize: '14px',
+              fontFamily: "'Noto Serif SC', serif",
+            }}>
+              还没有人情债，记账也记温度
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* 借出 */}
+              {activeDebts.filter(d => d.type === 'lent').length > 0 && (
+                <div>
+                  <div style={{ fontSize: '11px', color: '#6b9fcf', marginBottom: '8px', fontWeight: 500 }}>
+                    借出 ¥{activeDebts.filter(d => d.type === 'lent').reduce((s, d) => s + d.amount, 0).toLocaleString()}
+                  </div>
+                  {activeDebts.filter(d => d.type === 'lent').map(debt => (
+                    <div key={debt.id} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 16px', background: '#ece7dc', borderRadius: '12px',
+                      marginBottom: '8px', boxShadow: 'inset 2px 2px 4px #cdc5b8, inset -2px -2px 4px #fffbf5',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(107,159,207,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#6b9fcf" strokeWidth="1.5">
+                            <circle cx="8" cy="8" r="6"/>
+                            <path d="M8 5v4M8 11v.5"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '14px', color: '#3d3427' }}>{debt.personName}</div>
+                          {debt.reason && <div style={{ fontSize: '11px', color: '#a89f8e' }}>{debt.reason}</div>}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '15px', color: '#6b9fcf', fontFamily: "'Noto Serif SC', serif" }}>¥{debt.amount}</span>
+                        <button
+                          onClick={() => settleDebt(debt.id)}
+                          style={{ padding: '4px 12px', borderRadius: '8px', border: 'none', background: '#6b9fcf', color: '#fff', fontSize: '12px', cursor: 'pointer' }}
+                        >结算</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 借入 */}
+              {activeDebts.filter(d => d.type === 'borrowed').length > 0 && (
+                <div style={{ marginTop: '12px' }}>
+                  <div style={{ fontSize: '11px', color: '#c9923a', marginBottom: '8px', fontWeight: 500 }}>
+                    借入 ¥{activeDebts.filter(d => d.type === 'borrowed').reduce((s, d) => s + d.amount, 0).toLocaleString()}
+                  </div>
+                  {activeDebts.filter(d => d.type === 'borrowed').map(debt => (
+                    <div key={debt.id} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 16px', background: '#ece7dc', borderRadius: '12px',
+                      marginBottom: '8px', boxShadow: 'inset 2px 2px 4px #cdc5b8, inset -2px -2px 4px #fffbf5',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(201,146,58,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#c9923a" strokeWidth="1.5">
+                            <rect x="2" y="3" width="12" height="10" rx="2"/>
+                            <path d="M5 7h6M8 5v4"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '14px', color: '#3d3427' }}>{debt.personName}</div>
+                          {debt.reason && <div style={{ fontSize: '11px', color: '#a89f8e' }}>{debt.reason}</div>}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '15px', color: '#c9923a', fontFamily: "'Noto Serif SC', serif" }}>¥{debt.amount}</span>
+                        <button
+                          onClick={() => settleDebt(debt.id)}
+                          style={{ padding: '4px 12px', borderRadius: '8px', border: 'none', background: '#c9923a', color: '#fff', fontSize: '12px', cursor: 'pointer' }}
+                        >结算</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 新增债务按钮 */}
+          <button
+            onClick={() => setShowDebtModal(true)}
+            style={{
+              width: '100%', marginTop: '12px', padding: '10px',
+              borderRadius: '12px', border: '1.5px dashed #c9923a',
+              background: 'transparent', color: '#c9923a',
+              fontSize: '13px', fontFamily: "'Noto Sans SC', sans-serif",
+              cursor: 'pointer',
+            }}
+          >+ 记一笔</button>
+        </div>
+
       </div>
+
+      {/* DebtModal */}
+      {showDebtModal && (
+        <DebtModal
+          onClose={() => setShowDebtModal(false)}
+          onAdd={async (payload) => {
+            await addDebt(payload);
+            setShowDebtModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

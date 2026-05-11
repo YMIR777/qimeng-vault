@@ -119,7 +119,12 @@ export function RecordsFilterBar({
               }}
             >
               {opt.label}
-              {opt.value === 'custom' && '📅'}
+              {opt.value === 'custom' && (
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="1" y="2" width="10" height="9" rx="1.5"/>
+                  <path d="M1 5h10M4 1v2M8 1v2"/>
+                </svg>
+              )}
             </button>
           );
         })}
