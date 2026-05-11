@@ -1,6 +1,11 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useLedger } from '../store/useLedger';
+import { useRecordsFilter } from '../hooks/useRecordsFilter';
+import { useRecordsInfinite } from '../hooks/useRecordsInfinite';
+import { useTags } from '../store/useTags';
 import type { Transaction } from '../store/db';
+import { RecordsFilterBar } from '../components/records/RecordsFilterBar';
+import { MonthlyStats } from '../components/records/MonthlyStats';
 
 const PLATFORMS = ['比心', '微信', '抖音', '小红书', '建行', '招行'];
 const EXPENSE_CATEGORIES = ['交通', '餐饮', '娱乐', '购物', '住房', '医疗', '通讯', '其他'];
@@ -259,14 +264,34 @@ function EditModal({ tx, onClose, onSave }: EditModalProps) {
 export function Records() {
   const pageRef = useRef<HTMLDivElement>(null);
   const { transactions, updateTransaction } = useLedger();
+  const { tags: allTags } = useTags();
   const [search, setSearch] = useState('');
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
 
-  const filteredTx = useMemo(() => {
-    const sorted = [...transactions].sort((a, b) => b.date - a.date);
-    if (!search.trim()) return sorted;
+  const {
+    filterState,
+    setTimeRange,
+    setCustomDateRange,
+    setType,
+    setCategory,
+    setTagIds,
+    setSort,
+    filteredTransactions,
+    monthlyStats,
+  } = useRecordsFilter(transactions);
+
+  const { visibleTransactions, loadMore, hasMore, reset } = useRecordsInfinite(filteredTransactions);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+    reset();
+  }, [filterState, reset]);
+
+  // Search-filtered subset (applied on top of useRecordsFilter)
+  const displayTransactions = useMemo(() => {
+    if (!search.trim()) return visibleTransactions;
     const q = search.trim().toLowerCase();
-    return sorted.filter(tx => {
+    return visibleTransactions.filter(tx => {
       const noteMatch = (tx.note || '').toLowerCase().includes(q);
       const catMatch = (tx.category || '').toLowerCase().includes(q);
       const platMatch = (tx.platform || '').toLowerCase().includes(q);
@@ -274,14 +299,38 @@ export function Records() {
       const bossMatch = (tx.bossName || '').toLowerCase().includes(q);
       return noteMatch || catMatch || platMatch || amountMatch || bossMatch;
     });
-  }, [transactions, search]);
+  }, [visibleTransactions, search]);
 
-  const todayIncome = transactions
-    .filter(t => t.type === 'income' && t.date >= new Date().setHours(0, 0, 0, 0))
-    .reduce((s, t) => s + t.amount, 0);
-  const todayExpense = transactions
-    .filter(t => t.type === 'expense' && t.date >= new Date().setHours(0, 0, 0, 0))
-    .reduce((s, t) => s + t.amount, 0);
+  // RecordsFilterBar uses a slightly different state shape — adapt it
+  const filterBarState = useMemo(() => ({
+    timeRange: filterState.timeRange,
+    customStart: filterState.customDateRange
+      ? new Date(filterState.customDateRange.start).toISOString().split('T')[0]
+      : undefined,
+    customEnd: filterState.customDateRange
+      ? new Date(filterState.customDateRange.end).toISOString().split('T')[0]
+      : undefined,
+    type: filterState.type as 'all' | 'income' | 'expense',
+    category: filterState.category,
+    tagIds: filterState.tagIds,
+    sort: filterState.sort,
+  }), [filterState]);
+
+  function handleSetTimeRange(range: 'all' | 'today' | 'week' | 'month' | 'custom') {
+    setTimeRange(range);
+  }
+
+  function handleSetCustomDateRange(start: string, end: string) {
+    if (!start || !end) return;
+    setCustomDateRange({
+      start: new Date(start).getTime(),
+      end: new Date(end).getTime() + 24 * 60 * 60 * 1000 - 1,
+    });
+  }
+
+  function handleSetCategory(category: string) {
+    setCategory(category === '全部' ? '' : category);
+  }
 
   return (
     <>
@@ -308,6 +357,25 @@ export function Records() {
             color: '#3d3427',
             letterSpacing: '-0.01em',
           }}>全部记录</h1>
+        </div>
+
+        {/* Filter bar */}
+        <div className="animate-in">
+          <RecordsFilterBar
+            filterState={filterBarState}
+            setTimeRange={handleSetTimeRange}
+            setCustomDateRange={handleSetCustomDateRange}
+            setType={setType}
+            setCategory={handleSetCategory}
+            setTagIds={setTagIds}
+            setSort={setSort}
+            allTags={allTags}
+          />
+        </div>
+
+        {/* Monthly stats */}
+        <div className="animate-in" style={{ marginBottom: '16px' }}>
+          <MonthlyStats stats={monthlyStats} />
         </div>
 
         {/* Search */}
@@ -354,45 +422,6 @@ export function Records() {
           )}
         </div>
 
-        {/* Stats row */}
-        <div className="animate-in" style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '10px',
-          marginBottom: '24px',
-        }}>
-          <div style={{
-            background: '#f0ebe0',
-            borderRadius: '14px',
-            padding: '14px',
-            textAlign: 'center',
-            boxShadow: '4px 4px 10px #cdc5b8, -4px -4px 10px #fffbf5',
-          }}>
-            <div style={{ fontSize: '18px', color: '#6b9fcf', fontFamily: "'Noto Serif SC', serif" }}>+{todayIncome.toFixed(0)}</div>
-            <div style={{ fontSize: '9px', color: '#b8af9e', marginTop: '4px', letterSpacing: '0.1em' }}>今日收入</div>
-          </div>
-          <div style={{
-            background: '#f0ebe0',
-            borderRadius: '14px',
-            padding: '14px',
-            textAlign: 'center',
-            boxShadow: '4px 4px 10px #cdc5b8, -4px -4px 10px #fffbf5',
-          }}>
-            <div style={{ fontSize: '18px', color: '#c9923a', fontFamily: "'Noto Serif SC', serif" }}>-{todayExpense.toFixed(0)}</div>
-            <div style={{ fontSize: '9px', color: '#b8af9e', marginTop: '4px', letterSpacing: '0.1em' }}>今日支出</div>
-          </div>
-          <div style={{
-            background: '#f0ebe0',
-            borderRadius: '14px',
-            padding: '14px',
-            textAlign: 'center',
-            boxShadow: '4px 4px 10px #cdc5b8, -4px -4px 10px #fffbf5',
-          }}>
-            <div style={{ fontSize: '18px', color: '#3d3427', fontFamily: "'Noto Serif SC', serif" }}>{transactions.length}</div>
-            <div style={{ fontSize: '9px', color: '#b8af9e', marginTop: '4px', letterSpacing: '0.1em' }}>总记录</div>
-          </div>
-        </div>
-
         {/* Results count */}
         <div className="animate-in" style={{
           fontSize: '11px',
@@ -400,19 +429,21 @@ export function Records() {
           marginBottom: '12px',
           letterSpacing: '0.08em',
         }}>
-          {search ? `搜索「${search}」找到 ${filteredTx.length} 条` : `共 ${filteredTx.length} 条记录`}
+          {search
+            ? `搜索「${search}」找到 ${displayTransactions.length} 条`
+            : `共 ${displayTransactions.length} 条${displayTransactions.length < filteredTransactions.length ? `（共 ${filteredTransactions.length} 条）` : ''}`}
         </div>
 
         {/* Transaction list */}
         <div className="animate-in" style={{
-          maxHeight: 'calc(100dvh - 340px)',
+          maxHeight: 'calc(100dvh - 420px)',
           overflowY: 'auto',
           padding: '4px 2px',
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
         }}>
-          {filteredTx.length === 0 ? (
+          {displayTransactions.length === 0 ? (
             <div style={{
               textAlign: 'center',
               padding: '48px 24px',
@@ -424,7 +455,7 @@ export function Records() {
               {search ? '没有找到匹配的记录' : '暂无记录'}
             </div>
           ) : (
-            filteredTx.map(tx => (
+            displayTransactions.map(tx => (
               <div
                 key={tx.id}
                 style={{
@@ -541,6 +572,27 @@ export function Records() {
             ))
           )}
         </div>
+
+        {/* Load more */}
+        {hasMore && (
+          <div style={{ textAlign: 'center', padding: '16px' }}>
+            <button
+              onClick={loadMore}
+              style={{
+                padding: '10px 24px',
+                borderRadius: '10px',
+                border: '1.5px solid #d8d0c4',
+                background: '#f0ebe0',
+                color: '#7a7269',
+                fontFamily: "'Noto Sans SC', sans-serif",
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
+            >
+              加载更多
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 编辑弹窗 */}
