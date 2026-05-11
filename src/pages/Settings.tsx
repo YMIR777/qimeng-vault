@@ -2,6 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { useAccounts } from '../store/useAccounts';
 import { useBudgets } from '../store/useBudgets';
+import { useRecurring } from '../store/useRecurring';
+import { RecurringRuleCard } from '../components/recurring/RecurringRuleCard';
+import { RecurringRuleModal } from '../components/recurring/RecurringRuleModal';
+import type { RecurringRule } from '../store/db';
 
 const css = {
   bg: '#f5f0e8',
@@ -281,13 +285,22 @@ function BudgetSection() {
 }
 
 export default function Settings() {
-  const { accounts, totalBalance, addAccount, deleteAccount, transfer } = useAccounts();
-  const pageRef = useRef<HTMLDivElement>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [transferFrom, setTransferFrom] = useState('');
   const [transferTo, setTransferTo] = useState('');
   const [transferAmount, setTransferAmount] = useState('');
+  const [showRecurringModal, setShowRecurringModal] = useState(false);
+  const [editingRule, setEditingRule] = useState<RecurringRule | null>(null);
+  const [activeTab, setActiveTab] = useState<'accounts' | 'recurring'>('accounts');
+
+  const { rules, toggleActive, deleteRule, checkAndTrigger } = useRecurring();
+  const { accounts, totalBalance, addAccount, deleteAccount, transfer } = useAccounts();
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    checkAndTrigger();
+  }, []);
 
   useEffect(() => {
     if (!pageRef.current) return;
@@ -334,6 +347,34 @@ export default function Settings() {
         }}>账户管理</h1>
       </div>
 
+      {/* TabBar */}
+      <div className="animate-in" style={{
+        display: 'flex',
+        gap: '8px',
+        marginBottom: '20px',
+      }}>
+        <button onClick={() => setActiveTab('accounts')} style={{
+          flex: 1, padding: '10px 0',
+          background: activeTab === 'accounts' ? css.card : 'transparent',
+          border: 'none', borderRadius: '12px',
+          boxShadow: activeTab === 'accounts' ? css.shadowRaised : 'none',
+          color: activeTab === 'accounts' ? css.text : css.textMuted,
+          fontSize: '13px', fontWeight: 500,
+          cursor: 'pointer', fontFamily: "'Noto Sans SC', sans-serif",
+        }}>账户</button>
+        <button onClick={() => setActiveTab('recurring')} style={{
+          flex: 1, padding: '10px 0',
+          background: activeTab === 'recurring' ? css.card : 'transparent',
+          border: 'none', borderRadius: '12px',
+          boxShadow: activeTab === 'recurring' ? css.shadowRaised : 'none',
+          color: activeTab === 'recurring' ? css.text : css.textMuted,
+          fontSize: '13px', fontWeight: 500,
+          cursor: 'pointer', fontFamily: "'Noto Sans SC', sans-serif",
+        }}>自动记账</button>
+      </div>
+
+      {/* 账户内容 */}
+      {activeTab === 'accounts' && <>
       {/* 总资产卡片 */}
       <div className="animate-in" style={{
         background: css.card,
@@ -494,6 +535,41 @@ export default function Settings() {
         )}
       </div>
 
+      </>
+      }
+
+      {/* 自动记账内容 */}
+      {activeTab === 'recurring' && <>
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '12px', fontWeight: 500, color: css.textMuted,
+            letterSpacing: '0.08em', marginBottom: '14px',
+          }}>
+            周期规则
+          </div>
+          {rules.length === 0 ? (
+            <div style={{
+              textAlign: 'center', padding: '32px 0',
+              color: css.textSecondary, fontSize: '14px',
+            }}>还没有设置自动记账</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {rules.map(rule => (
+                <RecurringRuleCard
+                  key={rule.id}
+                  rule={rule}
+                  onToggleActive={toggleActive}
+                  onEdit={setEditingRule}
+                  onDelete={deleteRule}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </>
+      }
+
       {/* 预算配置 */}
       <BudgetSection />
 
@@ -569,6 +645,50 @@ export default function Settings() {
             addAccount({ ...data, color });
           }}
         />
+      )}
+
+      {/* 自动记账弹窗 */}
+      {showRecurringModal && (
+        <RecurringRuleModal
+          onClose={() => { setShowRecurringModal(false); setEditingRule(null); }}
+          onSave={async (data) => {
+            const { addRule, updateRule } = useRecurring.call({});
+            if (editingRule) {
+              await updateRule(editingRule.id, data);
+            } else {
+              await addRule(data);
+            }
+            setShowRecurringModal(false);
+            setEditingRule(null);
+          }}
+          initialRule={editingRule ?? undefined}
+        />
+      )}
+
+      {/* 新增规则按钮 */}
+      {activeTab === 'recurring' && (
+        <div className="animate-in" style={{
+          position: 'fixed',
+          bottom: '100px',
+          right: '24px',
+        }}>
+          <button
+            onClick={() => { setEditingRule(null); setShowRecurringModal(true); }}
+            style={{
+              width: '56px', height: '56px',
+              borderRadius: '50%',
+              background: css.accentGold,
+              border: 'none',
+              boxShadow: css.shadowRaised,
+              color: '#fff',
+              fontSize: '28px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >+</button>
+        </div>
       )}
     </div>
   );
