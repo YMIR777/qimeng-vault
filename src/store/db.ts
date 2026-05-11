@@ -19,6 +19,43 @@ export interface Account {
   createdAt: number;
 }
 
+export interface Tag {
+  id: string;
+  name: string;           // "出差"
+  color: string;          // "#c9923a"（金色）
+  count: number;          // 使用次数（排序用）
+  createdAt: number;
+}
+
+export interface Debt {
+  id: string;
+  type: 'lent' | 'borrowed';
+  personName: string;
+  amount: number;
+  reason?: string;
+  status: 'active' | 'settled';
+  createdAt: number;
+  settledAt?: number;
+}
+
+export interface RecurringRule {
+  id: string;
+  name: string;           // "饿了么会员"
+  amount: number;          // 金额（正数）
+  type: 'expense' | 'income';
+  category?: string;       // 支出时必须
+  accountId: string;       // 扣款账户
+  period: 'monthly' | 'weekly' | 'yearly';
+  dayOfMonth?: number;     // 每月几号（1-31）
+  dayOfWeek?: number;      // 每周周几（0=周日）
+  nextDue: number;         // 下次触发时间戳
+  active: boolean;
+  lastTriggered: number;   // 上次触发时间戳（防重复）
+  autoRecord: boolean;     // true=直接入账，false=弹窗确认
+  note?: string;
+  createdAt: number;
+}
+
 export interface Transaction {
   id: string;
   type: 'income' | 'expense' | 'transfer';
@@ -32,6 +69,7 @@ export interface Transaction {
   note?: string;
   accountId?: string;       // 收入/支出关联账户
   toAccountId?: string;     // 转账目标账户
+  tags?: string[];           // 标签 id 数组
   date: number;
   createdAt: number;
 }
@@ -51,14 +89,21 @@ class VaultDatabase extends Dexie {
   wishes!: Table<Wish>;
   accounts!: Table<Account>;
   budgets!: Table<Budget>;
+  tags!: Table<Tag>;
+  debts!: Table<Debt>;
+  recurringRules!: Table<RecurringRule>;
+
 
   constructor() {
     super('vault');
-    this.version(4).stores({
-      transactions: '++id, type, date, wishId, accountId',
+    this.version(5).stores({
+      transactions: '++id, type, date, wishId, accountId, *tags',
       wishes: '++id, status',
       accounts: '++id, type',
       budgets: '++id, category',
+      tags: 'id, name',
+      debts: '++id, type, status',
+      recurringRules: '++id, active, nextDue',
     });
   }
 }
