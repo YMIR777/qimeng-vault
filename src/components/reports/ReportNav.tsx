@@ -4,6 +4,8 @@ interface ReportNavProps {
 }
 
 const SECTIONS = [
+  { id: 'briefing', label: '简报' },
+  { id: 'goals', label: '目标' },
   { id: 'summary', label: '摘要' },
   { id: 'trend', label: '趋势' },
   { id: 'expense', label: '支出' },

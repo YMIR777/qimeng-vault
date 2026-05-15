@@ -1,18 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { useLedger } from '../store/useLedger';
 import { useAccounts } from '../store/useAccounts';
 import { useWishes } from '../store/useWishes';
 import { useBudgets } from '../store/useBudgets';
+import { getStoredGoals } from '../store/useGoals';
 import type { ParseResult } from '../components/magic/parseInput';
 import { MagicInput } from '../components/magic/MagicInput';
 import { ExpenseDecision } from '../components/magic/ExpenseDecision';
 import { SupplementForm } from '../components/magic/SupplementForm';
-import { WishPicker } from '../components/wishes/WishPicker';
-import { useToast } from '../components/ui/Toast';
-import { db } from '../store/db';
 import type { MagicInputRef } from '../components/magic/MagicInput';
+import { useToast } from '../components/ui/Toast';
+import { WishPicker } from '../components/wishes/WishPicker';
+import { db } from '../store/db';
+import { Link } from 'react-router-dom';
 
 function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 3);
@@ -162,6 +163,7 @@ function AccountOverview() {
 export function Dashboard() {
   const { transactions, totalAsset, addTransaction, updateTransaction } = useLedger();
   const { wishes, depositToWish } = useWishes();
+
   const { accounts } = useAccounts();
   const { budgets: _budgets } = useBudgets();
   const { showToast } = useToast();
@@ -330,10 +332,12 @@ export function Dashboard() {
   const todayExpense = todayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
 
   // ── 洞察卡片数据 ──────────────────────────────────────
-  const todayWorkMinutes = todayTx
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + (t.timeSpent || 0), 0);
-  const todayWorkHours = (todayWorkMinutes / 60).toFixed(1);
+  // 只统计明确记录了 timeSpent 的收入（避免未记录时间的收入干扰时薪）
+  const timedIncomeTx = todayTx.filter(t => t.type === 'income' && t.timeSpent && t.timeSpent > 0);
+  const timedIncome = timedIncomeTx.reduce((s, t) => s + t.amount, 0);
+  const todayWorkMinutes = timedIncomeTx.reduce((sum, t) => sum + (t.timeSpent || 0), 0);
+  const todayWorkHours = Number((todayWorkMinutes / 60).toFixed(1));
+  const hasTimeRecords = timedIncomeTx.length > 0;
 
   const weekStart = new Date();
   const dayOfWeek = weekStart.getDay();
@@ -343,8 +347,7 @@ export function Dashboard() {
   const weekIncome = transactions
     .filter(t => t.type === 'income' && t.date >= weekStart.getTime())
     .reduce((sum, t) => sum + t.amount, 0);
-  const weekGoal = 2000;
-  const weekProgress = Math.min((weekIncome / weekGoal) * 100, 100);
+
 
   const latestWish = [...wishes]
     .filter(w => w.status === 'building')
@@ -554,46 +557,117 @@ export function Dashboard() {
               fontSize: '10px',
               letterSpacing: '0.14em',
               color: '#a89f8e',
-              marginBottom: '10px',
-            }}>
-              今日已工作 {todayWorkHours} 小时，赚了 <span style={{
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
-                fontSize: '13px',
-                color: '#6b9fcf',
-                fontWeight: 500,
-              }}>{todayIncome.toFixed(0)}</span> 元
-            </div>
-            <div style={{
-              fontFamily: "'Noto Sans SC', sans-serif",
-              fontSize: '9px',
-              letterSpacing: '0.1em',
-              color: '#b8af9e',
               marginBottom: '8px',
             }}>
-              本周目标
+              {hasTimeRecords ? (
+                <>今日已工作 {todayWorkHours} 小时，赚了 <span style={{
+                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+                  fontSize: '13px',
+                  color: '#6b9fcf',
+                  fontWeight: 500,
+                }}>{timedIncome.toFixed(0)}</span> 元（计时收入）</>
+              ) : (
+                <>今日收入 <span style={{
+                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+                  fontSize: '13px',
+                  color: '#6b9fcf',
+                  fontWeight: 500,
+                }}>{todayIncome.toFixed(0)}</span> 元（未记录工时）</>
+              )}
             </div>
+
+            {/* 时薪大数字 */}
             <div style={{
-              height: '6px',
-              borderRadius: '3px',
-              background: 'rgba(163,158,148,0.15)',
-              overflow: 'hidden',
-              marginBottom: '6px',
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '4px',
+              marginBottom: '10px',
             }}>
-              <div style={{
-                height: '100%',
-                width: `${weekProgress}%`,
-                borderRadius: '3px',
-                background: '#7a9e7e',
-                transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              }} />
+              <span style={{
+                fontFamily: "'Noto Serif SC', serif",
+                fontSize: '28px',
+                fontWeight: 700,
+                color: '#3d3427',
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+              }}>
+                {hasTimeRecords ? (timedIncome / todayWorkHours).toFixed(0) : '—'}
+              </span>
+              <span style={{
+                fontSize: '11px',
+                color: '#a89f8e',
+                fontFamily: "'Noto Sans SC', sans-serif",
+              }}>
+                元/时薪
+              </span>
             </div>
-            <div style={{
+
+            {/* 可视化进度条：今日收入 vs 日目标 */}
+            {(() => {
+              const goals = getStoredGoals();
+              const now = new Date();
+              const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+              const dailyTarget = goals.monthlyIncome > 0 ? goals.monthlyIncome / daysInMonth : 0;
+              const dailyPct = dailyTarget > 0 ? (todayIncome / dailyTarget) * 100 : 0;
+              return (
+                <div style={{ marginBottom: '6px' }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}>
+                    <span style={{
+                      fontSize: '9px',
+                      color: '#b8af9e',
+                      letterSpacing: '0.1em',
+                      fontFamily: "'Noto Sans SC', sans-serif",
+                    }}>
+                      {goals.monthlyIncome > 0 ? '日目标完成度' : '今日收入'}
+                    </span>
+                    <span style={{
+                      fontSize: '10px',
+                      color: dailyPct >= 100 ? '#c9923a' : '#7a9e7e',
+                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+                    }}>
+                      {goals.monthlyIncome > 0 ? `${dailyPct.toFixed(0)}%` : `¥${todayIncome.toFixed(0)}`}
+                    </span>
+                  </div>
+                  {goals.monthlyIncome > 0 && (
+                    <div style={{
+                      height: '5px',
+                      borderRadius: '3px',
+                      background: 'rgba(163,158,148,0.15)',
+                      overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${Math.min(dailyPct, 100)}%`,
+                        borderRadius: '3px',
+                        background: dailyPct >= 100
+                          ? 'linear-gradient(90deg, #6b9fcf, #7a9e7e, #c9923a)'
+                          : 'linear-gradient(90deg, #6b9fcf, #7a9e7e)',
+                        transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                      }} />
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            <Link to="/reports" style={{
+              display: 'inline-block',
               fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
               fontSize: '10px',
-              color: '#7a9e7e',
-            }}>
-              {weekIncome.toFixed(0)} / {weekGoal}
-            </div>
+              color: '#a89f8e',
+              textDecoration: 'none',
+              transition: 'color 0.2s ease',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#c9923a')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#a89f8e')}
+            >
+              本周累计 +¥{weekIncome.toFixed(0)} →
+            </Link>
           </div>
 
           {/* 许愿瓶快速查看 */}

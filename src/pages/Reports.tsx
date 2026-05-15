@@ -1,13 +1,18 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   PieChart, Pie, Cell, BarChart, Bar, ResponsiveContainer,
 } from 'recharts';
 import { useLedger } from '../store/useLedger';
+import { useReports } from '../store/useReports';
+import { getGoalProgress } from '../store/useGoals';
 import { FinancialSummary } from '../components/reports/FinancialSummary';
+import { GoalProgressCard } from '../components/goals/GoalProgressCard';
 import { GoldenGooseCard } from '../components/reports/GoldenGooseCard';
 import { ReportNav } from '../components/reports/ReportNav';
+import { DailyReportCard, WeeklyReportCard, DailyReportStrip } from '../components/reports/ReportCard';
 import {
   calcNetWorthHistory,
   calcFreedomProgress,
@@ -213,7 +218,9 @@ function CustomTooltip({ active, payload, label }: any) {
 
 // ── 主页面 ─────────────────────────────────────────────────────────
 export function Reports() {
-  const { transactions } = useLedger();
+  const { transactions, totalAsset } = useLedger();
+  const { todayReport, weeklyReport, recentDailyReports } = useReports(transactions);
+  const goalProgressList = getGoalProgress(transactions, totalAsset);
   const pageRef = useRef<HTMLDivElement>(null);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -240,7 +247,7 @@ export function Reports() {
   // 滚动监听自动更新 active section
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['summary', 'trend', 'expense', 'income', 'health'];
+      const sections = ['briefing', 'goals', 'summary', 'trend', 'expense', 'income', 'health'];
       const scrollPos = window.scrollY + 100;
 
       for (let i = sections.length - 1; i >= 0; i--) {
@@ -335,6 +342,105 @@ export function Reports() {
         setActiveSection(id);
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }} />
+
+      {/* 简报 — 日报 + 周报 */}
+      <div id="briefing" className="animate-in" style={{ marginBottom: '24px' }}>
+        <div style={{
+          fontFamily: "'Noto Sans SC', sans-serif",
+          fontSize: '12px',
+          fontWeight: 500,
+          color: '#a89f8e',
+          letterSpacing: '0.08em',
+          marginBottom: '12px',
+        }}>
+          简报
+        </div>
+
+        {/* Today + This Week */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '12px',
+          marginBottom: '16px',
+        }}>
+          <DailyReportCard report={todayReport} />
+          <WeeklyReportCard report={weeklyReport} />
+        </div>
+
+        {/* Recent 7 days strip */}
+        <div style={{ marginBottom: '8px' }}>
+          <div style={{
+            fontSize: '11px',
+            color: '#b8af9e',
+            marginBottom: '8px',
+            fontFamily: "'Noto Sans SC', sans-serif",
+            letterSpacing: '0.08em',
+          }}>
+            近7日
+          </div>
+          <DailyReportStrip reports={recentDailyReports} />
+        </div>
+      </div>
+
+      {/* 目标追踪 — 4个目标完整卡片 */}
+      <div id="goals" className="animate-in" style={{ marginBottom: '24px' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '12px',
+        }}>
+          <div style={{
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '12px',
+            fontWeight: 500,
+            color: '#a89f8e',
+            letterSpacing: '0.08em',
+          }}>
+            目标追踪
+          </div>
+          <Link to="/goals" style={{
+            fontSize: '11px',
+            color: '#b8af9e',
+            textDecoration: 'none',
+            fontFamily: "'Noto Sans SC', sans-serif",
+          }}>
+            编辑目标 →
+          </Link>
+        </div>
+        {goalProgressList.length > 0 ? (
+          <div style={{ display: 'grid', gap: '8px' }}>
+            {goalProgressList.map((goal, i) => (
+              <GoalProgressCard key={goal.key} goal={goal} index={i} />
+            ))}
+          </div>
+        ) : (
+          <div style={{
+            background: '#f0ebe0',
+            borderRadius: '14px',
+            padding: '16px',
+            boxShadow: '3px 3px 8px #cdc5b8, -3px -3px 8px #fffbf5',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '12px', color: '#b8af9e', marginBottom: '8px', fontFamily: "'Noto Sans SC', sans-serif" }}>
+              还没有设置目标
+            </div>
+            <Link to="/goals" style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              background: 'rgba(201,146,58,0.10)',
+              color: '#c9923a',
+              fontSize: '12px',
+              textDecoration: 'none',
+              fontFamily: "'Noto Sans SC', sans-serif",
+              fontWeight: 500,
+            }}>
+              去设置目标 →
+            </Link>
+          </div>
+        )}
+      </div>
 
       {/* 财务摘要卡片 */}
       <div id="summary" className="animate-in" style={{ marginBottom: '12px' }}>
