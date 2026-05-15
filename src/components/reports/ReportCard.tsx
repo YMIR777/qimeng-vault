@@ -538,7 +538,7 @@ export function DailyReportStrip({ reports }: { reports: DailyReport[] }) {
       paddingBottom: '4px',
       scrollbarWidth: 'none',
     }}>
-      {reports.map((report, i) => {
+      {reports.map((report) => {
         const status = statusConfig[report.status];
         return (
           <div

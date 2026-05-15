@@ -223,7 +223,7 @@ export function GoalsSummary({ goalProgressList }: GoalsSummaryProps) {
       gap: '10px',
       marginBottom: '10px',
     }}>
-      {compactGoals.map((goal, i) => {
+      {compactGoals.map((goal) => {
         const pct = goal.target > 0
           ? (goal.higherIsBetter
               ? Math.min((goal.current / goal.target) * 100, 100)

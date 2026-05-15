@@ -220,7 +220,6 @@ function TagSelector({ selectedIds, onChange, allTags }: TagSelectorProps) {
             </div>
           ) : (
             allTags.map(tag => {
-              const checked = selectedIds.includes(tag.id) || selectedIds.length === 0;
               const isExplicitlyChecked = selectedIds.includes(tag.id);
               return (
                 <button
