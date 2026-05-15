@@ -54,10 +54,47 @@
   --radius-full: 9999px;
 }
 
-/* ─── Background ─── */
+/* ─── Global touch/scroll behavior ─── */
+html {
+  overscroll-behavior: none;
+}
+
 body {
-  background: var(--bg-primary);
-  background-attachment: fixed;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Smooth scroll for in-app anchors */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Prevent pull-to-refresh on mobile (not needed for a finance app) */
+#root {
+  overscroll-behavior: contain;
+}
+
+/* ─── Mobile responsive adjustments ─── */
+@media (max-width: 480px) {
+  :root {
+    --space-md: 12px;
+    --space-lg: 20px;
+    --space-xl: 32px;
+  }
+}
+
+/* TabBar mobile: smaller on very small screens */
+@media (max-width: 400px) {
+  .btn-tactile {
+    padding: 8px 2px 4px !important;
+  }
+  .btn-tactile svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .btn-tactile span {
+    font-size: 8px !important;
+  }
 }
 
 /* ─── Reset ─── */
@@ -194,4 +231,26 @@ h1, h2, h3 {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+/* ─── Mobile Touch & Responsive Overrides ─── */
+@media (max-width: 480px) {
+  :root {
+    --space-md: 12px;
+    --space-lg: 20px;
+    --space-xl: 32px;
+  }
+}
+
+/* TabBar touch feedback on mobile */
+@media (max-width: 400px) {
+  .btn-tactile {
+    padding: 8px 2px 4px !important;
+  }
+  .btn-tactile svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .btn-tactile span {
+    font-size: 8px !important;
+  }
 }

@@ -887,6 +887,7 @@ export function Dashboard() {
           <div style={{
             maxHeight: '320px',
             overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
             padding: '4px 2px',
             display: 'flex',
             flexDirection: 'column',

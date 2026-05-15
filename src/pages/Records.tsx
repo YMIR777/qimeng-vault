@@ -438,6 +438,7 @@ export function Records() {
         <div className="animate-in" style={{
           maxHeight: 'calc(100dvh - 420px)',
           overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
           padding: '4px 2px',
           display: 'flex',
           flexDirection: 'column',

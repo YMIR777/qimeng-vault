@@ -75,6 +75,10 @@ export function TabBar() {
         justifyContent: 'space-around',
         alignItems: 'center',
         gap: '2px',
+        // Mobile touch: prevent double-tap zoom and scroll delays
+        touchAction: 'manipulation',
+        userSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       {tabs.map((tab) => {
@@ -107,10 +111,29 @@ export function TabBar() {
                 (e.currentTarget as unknown as HTMLElement).style.background = 'rgba(240,235,224,0.5)';
               }
             }}
+            onClick={e => {
+              // Touch feedback: brief press animation on mobile
+              const el = e.currentTarget as HTMLElement;
+              el.style.transform = 'scale(0.95)';
+              setTimeout(() => {
+                el.style.transform = active ? 'scale(1.02)' : 'scale(1)';
+              }, 120);
+              if (!active) {
+                el.style.color = '#a89f8e';
+                el.style.background = 'rgba(240,235,224,0.5)';
+              }
+            }}
             onMouseLeave={e => {
               if (!active) {
                 (e.currentTarget as unknown as HTMLElement).style.color = '#b8af9e';
                 (e.currentTarget as unknown as HTMLElement).style.background = 'transparent';
+                (e.currentTarget as unknown as HTMLElement).style.transform = 'scale(1)';
+              }
+            }}
+            onMouseUp={e => {
+              if (!active) {
+                (e.currentTarget as unknown as HTMLElement).style.color = '#a89f8e';
+                (e.currentTarget as unknown as HTMLElement).style.background = 'rgba(240,235,224,0.5)';
               }
             }}
           >
