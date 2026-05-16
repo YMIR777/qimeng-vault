@@ -32,7 +32,11 @@ export function ReportNav({ activeSection, onNavigate }: ReportNavProps) {
         overflowX: 'auto',
         padding: '4px 8px',
         scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehaviorX: 'contain',
       }}>
+      <style>{`.report-nav-btn::-webkit-scrollbar { display: none; }`}</style>
         {SECTIONS.map(section => (
           <button
             key={section.id}
