@@ -218,6 +218,15 @@ function CustomTooltip({ active, payload, label }: any) {
 
 // ── 主页面 ─────────────────────────────────────────────────────────
 export function Reports() {
+  // Responsive grid: collapse multi-column to single column on mobile
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 480px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
   const { transactions, totalAsset } = useLedger();
   const { todayReport, weeklyReport, recentDailyReports } = useReports(transactions);
   const goalProgressList = getGoalProgress(transactions, totalAsset);
@@ -359,7 +368,7 @@ export function Reports() {
         {/* Today + This Week */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
           gap: '12px',
           marginBottom: '16px',
         }}>
@@ -450,7 +459,7 @@ export function Reports() {
       {/* Row 1: 月度收支趋势(2fr) + 资产构成(1fr) */}
       <div id="trend" className="animate-in" style={{
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
+        gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr',
         gap: '12px',
         marginBottom: '12px',
       }}>
@@ -574,7 +583,7 @@ export function Reports() {
       {/* Row 2: 支出洞察(2fr) + 生活投资占比(1fr) */}
       <div id="expense" className="animate-in" style={{
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
+        gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr',
         gap: '12px',
         marginBottom: '12px',
       }}>
@@ -787,7 +796,7 @@ export function Reports() {
       {/* Row 2.5: 日均支出趋势(2fr) + 生活投资占比(1fr) */}
       <div className="animate-in" style={{
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
+        gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr',
         gap: '12px',
         marginBottom: '12px',
       }}>
@@ -915,7 +924,7 @@ export function Reports() {
           </div>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '2fr 1fr 1fr 1fr',
+            gridTemplateColumns: isMobile ? '1fr 1fr' : '2fr 1fr 1fr 1fr',
             gap: '12px',
           }}>
             {/* 总收入 — 大卡片 */}
@@ -1091,7 +1100,7 @@ export function Reports() {
               <GoldenGooseCard transactions={transactions} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
               {/* 财富自由进度 */}
               <Card style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '10px', color: css.textMuted, marginBottom: '8px' }}>财富自由进度</div>

@@ -32,6 +32,15 @@ function AnimatedNumber({ value, prefix = '', suffix = '', duration = 1.2, delay
 }
 
 export function Workbench() {
+  // Responsive grid: collapse multi-column to single column on mobile
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 480px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
   const { transactions } = useLedger();
   const { wishes } = useWishes();
   const { activeDebts, settleDebt, addDebt } = useDebts();
@@ -283,7 +292,7 @@ export function Workbench() {
         </div>
 
         {/* ── Row 0: 工作概览（新增）──────────────────────── */}
-        <div ref={reg(0)} style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+        <div ref={reg(0)} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr 1fr 1fr', gap: '20px', marginBottom: '24px' }}>
           {/* 工作天数 */}
           <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>工作天数</div>
@@ -322,7 +331,7 @@ export function Workbench() {
         </div>
 
         {/* ── Row 1: 三大指标（现有）──────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr 1fr', gap: '24px', marginBottom: '24px' }}>
 
           {/* 本周收入 Hero */}
           <div ref={reg(1)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
@@ -410,7 +419,7 @@ export function Workbench() {
         </div>
 
         {/* ── Row 2: 时段分析（改进+新增）────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr', gap: '24px', marginBottom: '24px' }}>
           {/* 近7天收入热力图 */}
           <div ref={reg(4)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>近7天收入热力</div>
@@ -467,7 +476,7 @@ export function Workbench() {
         </div>
 
         {/* ── Row 3: 时薪趋势 + 来源分布（现有）────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.8fr 1fr', gap: '24px', marginBottom: '24px' }}>
 
           {/* 时薪趋势 */}
           <div ref={reg(6)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
@@ -538,7 +547,7 @@ export function Workbench() {
         </div>
 
         {/* ── Row 4: 客户价值分析（新增）+ 老板分析（现有）── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: '24px', marginBottom: '24px' }}>
 
           {/* 老板分析 & 高价值客户 */}
           <div ref={reg(8)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
