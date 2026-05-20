@@ -1,9 +1,9 @@
 # 绮梦帐间 — 产品路线图终极文档
 
 > 生成日期：2026-05-11
-> 最后更新：2026-05-16
+> 最后更新：2026-05-20
 > 维护者：Ymir & AI
-> 状态：核心功能已完成
+> 状态：核心功能已完成 · 移动端适配已完善
 
 ---
 
@@ -40,6 +40,7 @@
 | WisdomTooltip 财富智慧 | src/components/ui/WisdomTooltip.tsx | 2026-05-10 |
 | GoalSettings 财富目标 | src/components/goals/GoalSettings.tsx | 2026-05-10 |
 | Records 页面增强（筛选+分页+标签） | src/pages/Records.tsx, RecordsFilterBar.tsx | 2026-05-16 |
+| 移动端全面适配 | src/pages/Dashboard.tsx, Wishes.tsx, Settings.tsx, global.css | 2026-05-20 |
 | 页面过渡动画 | src/styles/global.css + App.tsx | 2026-05-11 |
 | Liquid Glass 效果增强 | src/index.css | 2026-05-11 |
 | QuickAddFAB 全局按钮 | src/components/ui/QuickAddFAB.tsx | 2026-05-10 |
@@ -57,7 +58,7 @@
 ### 选项 A：继续打磨（锦上添花）
 
 ```
-云端备份 → PWA 打包 → 移动端适配 → 更多图表类型（Sankey/年度复盘）
+代码分割优化 → 云端备份 → PWA 应用市场提交 → 更多图表类型（Sankey/年度复盘）
 ```
 
 ### 选项 B：发布 + 验证（Build in Public）

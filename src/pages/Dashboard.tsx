@@ -15,6 +15,18 @@ import { WishPicker } from '../components/wishes/WishPicker';
 import { db } from '../store/db';
 import { Link } from 'react-router-dom';
 
+// ── isMobile hook (shared breakpoint: 480px) ─────────────────────
+function useMobile(breakpoint = 480) {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= breakpoint);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 3);
 }
@@ -96,6 +108,7 @@ function BudgetProgress({ transactions }: { transactions: any[] }) {
 // ── AccountOverview — 账户总览 ─────────────────────────────────────
 function AccountOverview() {
   const { accounts } = useAccounts();
+  const isMobile = useMobile();
 
   if (accounts.length === 0) return null;
 
@@ -123,7 +136,9 @@ function AccountOverview() {
       </div>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+        gridTemplateColumns: isMobile
+          ? 'repeat(auto-fill, minmax(100px, 1fr))'
+          : 'repeat(auto-fill, minmax(120px, 1fr))',
         gap: '8px',
       }}>
         {accounts.map((account) => (
@@ -322,6 +337,7 @@ export function Dashboard() {
     setPendingIncomplete(null);
   }
 
+  const isMobile = useMobile();
   const recentTx = [...transactions]
     .sort((a, b) => b.date - a.date)
     .slice(0, 10);
@@ -362,9 +378,15 @@ export function Dashboard() {
   // Split integer and decimal parts
   const [integerPart, decimalPart] = formattedNumber.split('.');
 
+  // Safe area bottom padding for mobile with home indicator
+  const safeBottom = 'max(14px, env(safe-area-inset-bottom))';
+  const pagePaddingX = isMobile ? '16px' : '28px';
+  const pagePaddingTop = isMobile ? '80px' : '48px';
+  const pagePaddingBottom = isMobile ? `calc(88px + ${safeBottom})` : '100px';
+
   return (
     <div ref={pageRef} style={{
-      padding: '48px 28px 100px',
+      padding: `${pagePaddingTop} ${pagePaddingX} ${pagePaddingBottom}`,
       maxWidth: '560px',
       margin: '0 auto',
       minHeight: '100dvh',
@@ -389,8 +411,8 @@ export function Dashboard() {
           }}>绮梦账间</div>
           <Link to="/settings" style={{
             position: 'absolute',
-            right: '28px',
-            top: '48px',
+            right: isMobile ? '16px' : '28px',
+            top: isMobile ? '80px' : '48px',
             textDecoration: 'none',
             color: '#b8af9e',
             transition: 'color 0.2s ease',
@@ -536,7 +558,7 @@ export function Dashboard() {
         {/* Row 1: 今日工作激励 + 许愿瓶 */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '2fr 1fr',
+          gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr',
           gap: '10px',
           marginBottom: '10px',
           alignItems: 'stretch',
@@ -545,7 +567,7 @@ export function Dashboard() {
           <div style={{
             background: '#f0ebe0',
             borderRadius: '18px',
-            padding: '20px 18px',
+            padding: isMobile ? '16px 14px' : '20px 18px',
             boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
             display: 'flex',
             flexDirection: 'column',
@@ -675,7 +697,7 @@ export function Dashboard() {
             <div style={{
               background: '#f0ebe0',
               borderRadius: '18px',
-              padding: '18px 14px',
+              padding: isMobile ? '14px 12px' : '18px 14px',
               boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
               display: 'flex',
               flexDirection: 'column',
@@ -759,7 +781,7 @@ export function Dashboard() {
       {/* Quick Stats — Asymmetric Bento Grid */}
       <div className="animate-in" style={{
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr 1fr',
+        gridTemplateColumns: isMobile ? '1fr 1fr' : '2fr 1fr 1fr',
         gap: '10px',
         marginBottom: '32px',
         alignItems: 'stretch',
@@ -768,7 +790,7 @@ export function Dashboard() {
         <div style={{
           background: '#f0ebe0',
           borderRadius: '18px',
-          padding: '20px 16px 18px',
+          padding: isMobile ? '16px 12px' : '20px 16px 18px',
           textAlign: 'center',
           boxShadow: '5px 5px 12px #cdc5b8, -5px -5px 12px #fffbf5',
           display: 'flex',

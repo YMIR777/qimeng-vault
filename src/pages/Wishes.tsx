@@ -5,6 +5,18 @@ import { useLedger } from '../store/useLedger';
 import { WishBottle } from '../components/wishes/WishBottle';
 import { WishDetail } from '../components/wishes/WishDetail';
 
+// ── isMobile hook (shared breakpoint: 480px) ─────────────────────
+function useMobile(breakpoint = 480) {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= breakpoint);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 // ── Design Tokens (Cream Neumorphism) ──────────────────────────────
 const css = {
   bg: '#f5f0e8',
@@ -206,16 +218,19 @@ export function Wishes() {
     setShowModal(false);
   };
 
+  const isMobile = useMobile();
+  const safeBottom = 'max(14px, env(safe-area-inset-bottom))';
+
   return (
-    <div ref={pageRef} style={{ padding: '40px 24px 100px', background: css.bg, minHeight: '100vh' }}>
+    <div ref={pageRef} style={{ padding: `40px 24px calc(100px + ${safeBottom})`, background: css.bg, minHeight: '100dvh' }}>
       {/* Header */}
       <div className="animate-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <h1
           style={{
             margin: 0,
-            fontFamily: 'var(--font-display)',
+            fontFamily: "'Noto Serif SC', serif",
             color: css.text,
-            fontSize: '24px',
+            fontSize: isMobile ? '20px' : '24px',
             fontWeight: 400,
           }}
         >

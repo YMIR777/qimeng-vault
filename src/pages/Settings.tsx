@@ -7,6 +7,18 @@ import { RecurringRuleCard } from '../components/recurring/RecurringRuleCard';
 import { RecurringRuleModal } from '../components/recurring/RecurringRuleModal';
 import type { RecurringRule } from '../store/db';
 
+// ── isMobile hook (shared breakpoint: 480px) ─────────────────────
+function useMobile(breakpoint = 480) {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= breakpoint);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 const css = {
   bg: '#f5f0e8',
   card: '#f0ebe0',
@@ -324,9 +336,12 @@ export default function Settings() {
     }
   };
 
+  const isMobile = useMobile();
+  const safeBottom = 'max(14px, env(safe-area-inset-bottom))';
+
   return (
     <div ref={pageRef} style={{
-      padding: '40px 24px 100px',
+      padding: `40px ${isMobile ? '16px' : '24px'} calc(100px + ${safeBottom})`,
       maxWidth: '560px',
       margin: '0 auto',
       minHeight: '100dvh',
@@ -342,7 +357,7 @@ export default function Settings() {
         }}>绮梦账间</div>
         <h1 style={{
           fontFamily: "'Noto Sans SC', sans-serif",
-          fontSize: '22px', fontWeight: 500,
+          fontSize: isMobile ? '18px' : '22px', fontWeight: 500,
           color: css.text, letterSpacing: '-0.01em', margin: 0,
         }}>账户管理</h1>
       </div>
