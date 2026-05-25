@@ -876,9 +876,29 @@ export default function Settings() {
           </div>
           {rules.length === 0 ? (
             <div style={{
-              textAlign: 'center', padding: '32px 0',
-              color: css.textSecondary, fontSize: '14px',
-            }}>还没有设置自动记账</div>
+              textAlign: 'center', padding: '40px 20px',
+            }}>
+              <div style={{
+                color: css.textSecondary, fontSize: '14px',
+                marginBottom: '20px',
+                fontFamily: "'Noto Sans SC', sans-serif",
+              }}>还没有设置自动记账</div>
+              <button
+                onClick={() => { setEditingRule(null); setShowRecurringModal(true); }}
+                style={{
+                  padding: '14px 32px',
+                  background: css.accentGold,
+                  border: 'none',
+                  borderRadius: '14px',
+                  color: '#fff',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  fontFamily: "'Noto Sans SC', sans-serif",
+                  boxShadow: '3px 3px 8px #cdc5b8, -3px -3px 8px #fffbf5',
+                }}
+              >+ 新增自动记账</button>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {rules.map(rule => (
@@ -890,6 +910,22 @@ export default function Settings() {
                   onDelete={deleteRule}
                 />
               ))}
+              <button
+                onClick={() => { setEditingRule(null); setShowRecurringModal(true); }}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  marginTop: '4px',
+                  background: 'transparent',
+                  border: '1.5px dashed #c9923a',
+                  borderRadius: '14px',
+                  color: '#c9923a',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  fontFamily: "'Noto Sans SC', sans-serif",
+                }}
+              >+ 新增自动记账</button>
             </div>
           )}
         </div>
@@ -991,31 +1027,7 @@ export default function Settings() {
         />
       )}
 
-      {/* 新增规则按钮 */}
-      {activeTab === 'recurring' && (
-        <div className="animate-in" style={{
-          position: 'fixed',
-          bottom: '100px',
-          right: '24px',
-        }}>
-          <button
-            onClick={() => { setEditingRule(null); setShowRecurringModal(true); }}
-            style={{
-              width: '56px', height: '56px',
-              borderRadius: '50%',
-              background: css.accentGold,
-              border: 'none',
-              boxShadow: css.shadowRaised,
-              color: '#fff',
-              fontSize: '28px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >+</button>
-        </div>
-      )}
+
     </div>
   );
 }
