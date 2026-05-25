@@ -214,8 +214,13 @@ export function Wishes() {
   }, [wishes.length]);
 
   const handleAddWish = async (data: { name: string; targetPrice: number }) => {
-    await addWish(data);
-    setShowModal(false);
+    try {
+      await addWish(data);
+      setShowModal(false);
+    } catch (err) {
+      console.error('创建星体失败:', err);
+      alert('创建失败，请检查浏览器是否开启了无痕模式（无痕模式下数据无法保存）');
+    }
   };
 
   const isMobile = useMobile();

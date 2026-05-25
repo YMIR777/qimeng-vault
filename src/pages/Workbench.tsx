@@ -268,19 +268,19 @@ export function Workbench() {
   const regBoss = (i: number) => (el: HTMLDivElement | null) => { bossRowRefs.current[i] = el; };
 
   return (
-    <div ref={pageRef} style={{ minHeight: '100dvh', background: '#f5f0e8', padding: '40px 48px 100px' }}>
+    <div ref={pageRef} style={{ minHeight: '100dvh', background: '#f5f0e8', padding: isMobile ? '80px 16px calc(88px + max(14px, env(safe-area-inset-bottom)))' : '40px 48px 100px' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '48px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: isMobile ? '28px' : '48px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '11px', letterSpacing: '0.5em', color: '#b8af9e', marginBottom: '4px' }}>绮梦账间</div>
-            <h1 style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '28px', fontWeight: 400, color: '#3d3427', margin: 0, letterSpacing: '-0.02em' }}>工作台</h1>
+            <h1 style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: isMobile ? '22px' : '28px', fontWeight: 400, color: '#3d3427', margin: 0, letterSpacing: '-0.02em' }}>工作台</h1>
           </div>
           <div style={{ display: 'flex', gap: '6px', background: '#ece7dc', borderRadius: '12px', padding: '4px' }}>
             {(['all', 'month', 'week'] as const).map(p => (
               <button key={p} onClick={() => setActivePeriod(p)} style={{
-                padding: '8px 18px', borderRadius: '10px', border: 'none',
+                padding: isMobile ? '6px 12px' : '8px 18px', borderRadius: '10px', border: 'none',
                 background: activePeriod === p ? '#f5f0e8' : 'transparent',
                 color: activePeriod === p ? '#3d3427' : '#a89f8e',
                 fontSize: '12px', fontFamily: "'Noto Sans SC', sans-serif", cursor: 'pointer',
@@ -291,13 +291,13 @@ export function Workbench() {
           </div>
         </div>
 
-        {/* ── Row 0: 工作概览（新增）──────────────────────── */}
-        <div ref={reg(0)} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr 1fr 1fr', gap: '20px', marginBottom: '24px' }}>
-          {/* 工作天数 */}
-          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+        {/* ── Row 0: 工作概览 ── Bento非对称网格 ──────────── */}
+        <div ref={reg(0)} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1.6fr 1fr 1fr 1fr', gap: isMobile ? '12px' : '20px', marginBottom: '24px' }}>
+          {/* 工作天数 — mobile hero card, spans full width */}
+          <div style={{ gridColumn: isMobile ? 'span 2' : undefined, background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '18px 16px' : '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>工作天数</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-              <span style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '42px', color: '#6b9fcf', lineHeight: 1, fontWeight: 400 }}>
+              <span style={{ fontFamily: "'Noto Serif SC', serif", fontSize: isMobile ? '32px' : '42px', color: '#6b9fcf', lineHeight: 1, fontWeight: 400 }}>
                 <AnimatedNumber value={workOverview.workDays} />
               </span>
               <span style={{ fontSize: '13px', color: '#a89f8e' }}>天</span>
@@ -305,39 +305,41 @@ export function Workbench() {
             <div style={{ fontSize: '11px', color: '#a89f8e', marginTop: '8px' }}>本月有收入记录</div>
           </div>
           {/* 最高单笔 */}
-          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 12px' : '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>最高单笔</div>
-            <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '28px', color: '#3d3427' }}>
+            <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: isMobile ? '20px' : '28px', color: '#3d3427' }}>
               <AnimatedNumber value={workOverview.maxIncome} prefix="¥" />
             </div>
           </div>
           {/* 回头客 */}
-          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 12px' : '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>回头客</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-              <span className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '28px', color: '#7a9e7e' }}>
+              <span className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: isMobile ? '20px' : '28px', color: '#7a9e7e' }}>
                 <AnimatedNumber value={workOverview.returningCustomers} />
               </span>
               <span style={{ fontSize: '12px', color: '#a89f8e' }}>/ {workOverview.totalCustomers}位</span>
             </div>
           </div>
-          {/* 平均订单 */}
-          <div style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
-            <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '16px' }}>平均订单</div>
-            <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '28px', color: '#c9923a' }}>
-              <AnimatedNumber value={workOverview.avgOrder} prefix="¥" />
+          {/* 平均订单 — mobile spans full width for asymmetric rhythm */}
+          <div style={{ gridColumn: isMobile ? 'span 2' : undefined, background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 16px' : '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase' }}>平均订单</div>
+              <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: isMobile ? '20px' : '28px', color: '#c9923a' }}>
+                <AnimatedNumber value={workOverview.avgOrder} prefix="¥" />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ── Row 1: 三大指标（现有）──────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        {/* ── Row 1: 三大指标 ── mobile非对称布局 ───────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1.4fr 1fr 1fr', gap: isMobile ? '12px' : '24px', marginBottom: '24px' }}>
 
-          {/* 本周收入 Hero */}
-          <div ref={reg(1)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          {/* 本周收入 Hero — mobile spans full width */}
+          <div ref={reg(1)} style={{ gridColumn: isMobile ? 'span 2' : undefined, background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '20px 16px' : '32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>本周收入</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '16px' }}>
-              <span style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '52px', color: '#6b9fcf', lineHeight: 1, fontWeight: 400 }}>
+              <span style={{ fontFamily: "'Noto Serif SC', serif", fontSize: isMobile ? '34px' : '52px', color: '#6b9fcf', lineHeight: 1, fontWeight: 400 }}>
                 +<AnimatedNumber value={weekComparison.thisWeek.income} />
               </span>
             </div>
@@ -363,7 +365,7 @@ export function Workbench() {
           </div>
 
           {/* 工作时长 */}
-          <div ref={reg(2)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(2)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 12px' : '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>工作时长</div>
             {timeStats.totalMin === 0 ? (
               <div className="empty-state">
@@ -379,15 +381,15 @@ export function Workbench() {
               <>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '14px' }}>
                   <div>
-                    <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '24px', color: '#3d3427' }}><AnimatedNumber value={timeStats.totalMin} /></div>
+                    <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: isMobile ? '18px' : '24px', color: '#3d3427' }}><AnimatedNumber value={timeStats.totalMin} /></div>
                     <div style={{ fontSize: '10px', color: '#a89f8e', marginTop: '4px' }}>总时长(分)</div>
                   </div>
                   <div>
-                    <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '24px', color: '#3d3427' }}><AnimatedNumber value={timeStats.avgMin} delay={0.1} /></div>
+                    <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: isMobile ? '18px' : '24px', color: '#3d3427' }}><AnimatedNumber value={timeStats.avgMin} delay={0.1} /></div>
                     <div style={{ fontSize: '10px', color: '#a89f8e', marginTop: '4px' }}>平均(分)</div>
                   </div>
                   <div>
-                    <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: '24px', color: '#6b9fcf' }}><AnimatedNumber value={timeStats.hourlyRate} delay={0.2} /></div>
+                    <div style={{ fontFamily: "'Noto Serif SC', serif", fontSize: isMobile ? '18px' : '24px', color: '#6b9fcf' }}><AnimatedNumber value={timeStats.hourlyRate} delay={0.2} /></div>
                     <div style={{ fontSize: '10px', color: '#a89f8e', marginTop: '4px' }}>时薪</div>
                   </div>
                 </div>
@@ -401,27 +403,27 @@ export function Workbench() {
           </div>
 
           {/* 今日收支 */}
-          <div ref={reg(3)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(3)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 12px' : '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>今日</div>
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '11px', color: '#a89f8e', marginBottom: '4px' }}>收入</div>
-              <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '26px', color: '#6b9fcf' }}>
+              <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: isMobile ? '20px' : '26px', color: '#6b9fcf' }}>
                 +<AnimatedNumber value={todayIncome.income} />
               </div>
             </div>
             <div>
               <div style={{ fontSize: '11px', color: '#a89f8e', marginBottom: '4px' }}>支出</div>
-              <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '26px', color: '#c9923a' }}>
+              <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: isMobile ? '20px' : '26px', color: '#c9923a' }}>
                 -<AnimatedNumber value={todayIncome.expense} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Row 2: 时段分析（改进+新增）────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        {/* ── Row 2: 时段分析 ── 图表区 ────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr', gap: isMobile ? '12px' : '24px', marginBottom: '24px' }}>
           {/* 近7天收入热力图 */}
-          <div ref={reg(4)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(4)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '16px 14px' : '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>近7天收入热力</div>
             <div style={{ display: 'flex', gap: '12px' }}>
               {incomeHeatmap.map((day, i) => {
@@ -447,7 +449,7 @@ export function Workbench() {
           </div>
 
           {/* 工作时长趋势 */}
-          <div ref={reg(5)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(5)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 12px' : '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>工作时长趋势</div>
             {timeTrend.every(d => d.minutes === 0) ? (
               <div className="empty-state">
@@ -475,11 +477,11 @@ export function Workbench() {
           </div>
         </div>
 
-        {/* ── Row 3: 时薪趋势 + 来源分布（现有）────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.8fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        {/* ── Row 3: 时薪趋势 + 来源分布 ── 图表区 ─────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.8fr 1fr', gap: isMobile ? '12px' : '24px', marginBottom: '24px' }}>
 
           {/* 时薪趋势 */}
-          <div ref={reg(6)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(6)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '16px 14px' : '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>时薪趋势</div>
             {rateData.length === 0 ? (
               <div className="empty-state">
@@ -509,7 +511,7 @@ export function Workbench() {
           </div>
 
           {/* 来源分布 */}
-          <div ref={reg(7)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(7)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 12px' : '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>来源分布</div>
             {pieData.length === 0 ? (
               <div className="empty-state">
@@ -546,11 +548,11 @@ export function Workbench() {
           </div>
         </div>
 
-        {/* ── Row 4: 客户价值分析（新增）+ 老板分析（现有）── */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        {/* ── Row 4: 客户价值 + 老板分析 ── asymmetric ────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: isMobile ? '12px' : '24px', marginBottom: '24px' }}>
 
           {/* 老板分析 & 高价值客户 */}
-          <div ref={reg(8)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+          <div ref={reg(8)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '16px 14px' : '28px 32px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase' }}>
                 老板分析 <span style={{ fontSize: '11px', color: '#6b9fcf', fontFamily: "'Noto Serif SC', serif" }}>{bossAnalysis.length}</span>
@@ -605,10 +607,10 @@ export function Workbench() {
             )}
           </div>
 
-          {/* 回头客vs新客户 + 星体进度 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* 回头客vs新客户 + 星体进度 — mobile 2-col grid */}
+          <div style={{ display: isMobile ? 'grid' : 'flex', flexDirection: isMobile ? undefined : 'column', gridTemplateColumns: isMobile ? '1fr 1fr' : undefined, gap: '12px' }}>
             {/* 回头客vs新客户 */}
-            <div ref={reg(9)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5', flex: 1 }}>
+            <div ref={reg(9)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 12px' : '28px 24px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5', flex: 1 }}>
               <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>客户构成</div>
               {customerTypeData.length === 0 ? (
                 <div className="empty-state">
@@ -647,7 +649,7 @@ export function Workbench() {
             </div>
 
             {/* 星体进度 */}
-            <div ref={reg(10)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: '28px 28px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
+            <div ref={reg(10)} style={{ background: '#f5f0e8', borderRadius: '24px', padding: isMobile ? '14px 14px' : '28px 28px', boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5' }}>
               <div style={{ fontFamily: "'Noto Sans SC', sans-serif", fontSize: '11px', letterSpacing: '0.25em', color: '#a89f8e', textTransform: 'uppercase', marginBottom: '20px' }}>正在攒的星体</div>
               {closestWish ? (
                 <>
@@ -662,7 +664,7 @@ export function Workbench() {
                         ¥{closestWish.currentBalance.toLocaleString()} / ¥{closestWish.targetPrice.toLocaleString()}
                       </div>
                     </div>
-                    <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: '24px', color: '#c9923a' }}>
+                    <div className="font-mono" style={{ fontFamily: "var(--cream-mono)", fontSize: isMobile ? '18px' : '24px', color: '#c9923a' }}>
                       <AnimatedNumber value={Math.round((closestWish.currentBalance / closestWish.targetPrice) * 100)} suffix="%" />
                     </div>
                   </div>
@@ -696,7 +698,7 @@ export function Workbench() {
         <div style={{
           background: '#f5f0e8',
           borderRadius: '24px',
-          padding: '28px 32px',
+          padding: isMobile ? '16px 14px' : '28px 32px',
           boxShadow: '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5',
           marginBottom: '24px',
         }}>

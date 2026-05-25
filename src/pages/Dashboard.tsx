@@ -227,6 +227,7 @@ export function Dashboard() {
   }, [totalAsset]);
 
   async function handleInputSubmit(result: ParseResult) {
+    try {
     if (!result.complete) {
       setPendingIncomplete(result);
       setShowSupplement(true);
@@ -270,9 +271,14 @@ export function Dashboard() {
       setShowSupplement(true);
       return;
     }
+    } catch (err) {
+      console.error('记录失败:', err);
+      alert('记录失败，请检查浏览器是否开启了无痕模式（无痕模式下数据无法保存）');
+    }
   }
 
   async function handleExpenseConfirm(judgment: 'worthy' | 'unworthy') {
+    try {
     if (!pendingExpense) return;
     setShowDecision(false);
     if (!pendingExpense.complete) {
@@ -295,9 +301,14 @@ export function Dashboard() {
       showToast(`${pendingExpense.amount} 元（支出）· ${judgment === 'worthy' ? '值得' : '不值'}`, 'success');
       setPendingExpense(null);
     }
+    } catch (err) {
+      console.error('记录失败:', err);
+      alert('记录失败，请检查浏览器是否开启了无痕模式（无痕模式下数据无法保存）');
+    }
   }
 
   async function handleSupplementConfirm(result: ParseResult & { accountId?: string; tags?: string[] }) {
+    try {
     setShowSupplement(false);
     if (!pendingIncomplete && !pendingExpense) return;
 
@@ -335,6 +346,11 @@ export function Dashboard() {
     showToast(`${result.amount} 元（${typeLabel}）${judgmentLabel}`, 'success');
     setPendingExpense(null);
     setPendingIncomplete(null);
+    } catch (err) {
+      console.error('记录失败:', err);
+      setShowSupplement(true);
+      alert('记录失败，请检查浏览器是否开启了无痕模式（无痕模式下数据无法保存）');
+    }
   }
 
   const isMobile = useMobile();

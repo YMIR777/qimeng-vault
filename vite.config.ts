@@ -5,6 +5,15 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   build: {
     chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules/recharts')) return 'vendor-recharts';
+          if (id.includes('node_modules/three') || id.includes('node_modules/@react-three')) return 'vendor-three';
+          if (id.includes('node_modules/gsap')) return 'vendor-gsap';
+        },
+      },
+    },
   },
   plugins: [
     react(),
