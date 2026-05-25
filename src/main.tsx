@@ -5,11 +5,19 @@ import App from './App.tsx'
 import { initDefaultAccounts } from './store/db'
 import { fullSync } from './supabase/sync'
 
-// 初始化默认账户 + 启动云端同步
-Promise.all([
-  initDefaultAccounts().catch(console.error),
-  fullSync().then(r => console.log('[sync] initial sync done:', r)),
-]).then(() => console.log('[app] ready'))
+// 先同步云端数据，再初始化默认账户
+async function initApp() {
+  try {
+    const result = await fullSync();
+    console.log('[sync] initial sync done:', result);
+  } catch (err) {
+    console.error('[sync] initial sync failed:', err);
+  }
+  // 只有在云端也没有数据时才创建默认账户
+  await initDefaultAccounts();
+  console.log('[app] ready');
+}
+initApp();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
