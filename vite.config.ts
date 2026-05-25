@@ -19,7 +19,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons/app-icon-192.png', 'icons/app-icon-512.png'],
+      injectRegister: false, // 使用自定义 registerSW.js
+      includeAssets: ['favicon.svg', 'icons/app-icon-192.png', 'icons/app-icon-512.png', 'registerSW.js'],
       manifest: {
         name: '绮梦帐间 · 记录存在的痕迹',
         short_name: '绮梦帐间',
