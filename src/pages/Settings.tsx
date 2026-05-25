@@ -6,6 +6,7 @@ import { useRecurring } from '../store/useRecurring';
 import { RecurringRuleCard } from '../components/recurring/RecurringRuleCard';
 import { RecurringRuleModal } from '../components/recurring/RecurringRuleModal';
 import type { RecurringRule } from '../store/db';
+import { getSyncCode, setSyncCode } from '../supabase/client';
 
 // ── isMobile hook (shared breakpoint: 480px) ─────────────────────
 function useMobile(breakpoint = 480) {
@@ -296,6 +297,208 @@ function BudgetSection() {
   );
 }
 
+// ── SyncSettings: 跨设备同步码管理 ──────────────────────────────
+function SyncSettings() {
+  const [code, setCode] = useState(getSyncCode());
+  const [inputCode, setInputCode] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for non-HTTPS or older browsers
+      const el = document.createElement('textarea');
+      el.value = code;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleLink = () => {
+    if (!inputCode.trim() || inputCode.trim().length < 10) return;
+    setSyncCode(inputCode.trim());
+    setCode(inputCode.trim());
+    setIsLinking(true);
+    setInputCode('');
+    // 刷新页面以触发 fullSync 拉取新设备的数据
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
+
+  return (
+    <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* 当前同步码 */}
+      <div style={{
+        background: css.card,
+        borderRadius: '20px',
+        padding: '24px',
+        boxShadow: css.shadowRaised,
+      }}>
+        <div style={{
+          fontFamily: "'Noto Sans SC', sans-serif",
+          fontSize: '11px',
+          letterSpacing: '0.2em',
+          color: css.textMuted,
+          textTransform: 'uppercase',
+          marginBottom: '14px',
+        }}>你的同步码</div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '12px 16px',
+          background: css.bg,
+          borderRadius: '12px',
+          boxShadow: css.shadowInset,
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          color: css.text,
+          wordBreak: 'break-all',
+        }}>
+          <span style={{ flex: 1 }}>{code}</span>
+          <button
+            onClick={handleCopy}
+            style={{
+              padding: '6px 14px',
+              background: copied ? '#7a9e7e' : css.accentGold,
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+              fontSize: '12px',
+              cursor: 'pointer',
+              fontFamily: "'Noto Sans SC', sans-serif",
+              whiteSpace: 'nowrap',
+              transition: 'background 0.2s ease',
+            }}
+          >
+            {copied ? '已复制' : '复制'}
+          </button>
+        </div>
+        <p style={{
+          fontSize: '11px',
+          color: css.textSecondary,
+          marginTop: '10px',
+          lineHeight: 1.6,
+        }}>
+          这串代码代表你。在另一台设备输入相同同步码，数据就会互通。
+        </p>
+      </div>
+
+      {/* 关联另一台设备 */}
+      <div style={{
+        background: css.card,
+        borderRadius: '20px',
+        padding: '24px',
+        boxShadow: css.shadowRaised,
+      }}>
+        <div style={{
+          fontFamily: "'Noto Sans SC', sans-serif",
+          fontSize: '11px',
+          letterSpacing: '0.2em',
+          color: css.textMuted,
+          textTransform: 'uppercase',
+          marginBottom: '14px',
+        }}>关联设备</div>
+        {isLinking ? (
+          <div style={{
+            padding: '16px',
+            textAlign: 'center',
+            color: '#7a9e7e',
+            fontSize: '14px',
+            fontFamily: "'Noto Sans SC', sans-serif",
+          }}>
+            关联成功，正在同步数据...
+          </div>
+        ) : (
+          <>
+            <p style={{
+              fontSize: '11px',
+              color: css.textSecondary,
+              marginBottom: '12px',
+              lineHeight: 1.6,
+            }}>
+              在另一台设备打开「云同步」页面，复制同步码，粘贴到这里：
+            </p>
+            <input
+              type="text"
+              value={inputCode}
+              onChange={e => setInputCode(e.target.value)}
+              placeholder="粘贴另一台设备的同步码"
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                padding: '12px 16px',
+                background: css.bg,
+                border: 'none',
+                borderRadius: '12px',
+                boxShadow: css.shadowInset,
+                color: css.text,
+                fontSize: '13px',
+                fontFamily: 'monospace',
+                outline: 'none',
+                marginBottom: '12px',
+              }}
+            />
+            <button
+              onClick={handleLink}
+              disabled={!inputCode.trim() || inputCode.trim().length < 10}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: inputCode.trim().length >= 10 ? css.accentGold : '#e0dbd3',
+                border: 'none',
+                borderRadius: '12px',
+                color: inputCode.trim().length >= 10 ? '#fff' : '#b8af9e',
+                fontSize: '14px',
+                fontWeight: 500,
+                cursor: inputCode.trim().length >= 10 ? 'pointer' : 'not-allowed',
+                fontFamily: "'Noto Sans SC', sans-serif",
+              }}
+            >
+              关联并同步
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* 安全说明 */}
+      <div style={{
+        padding: '16px 20px',
+        borderRadius: '14px',
+        background: 'rgba(201,146,58,0.06)',
+        border: '1px solid rgba(201,146,58,0.12)',
+      }}>
+        <div style={{
+          fontFamily: "'Noto Sans SC', sans-serif",
+          fontSize: '11px',
+          fontWeight: 500,
+          color: css.accentGold,
+          marginBottom: '6px',
+        }}>
+          关于安全
+        </div>
+        <p style={{
+          fontSize: '10px',
+          color: css.textSecondary,
+          lineHeight: 1.7,
+          margin: 0,
+        }}>
+          你的同步码是一串随机生成的唯一标识，别人无法猜到。只有输入相同同步码的设备才能看到同一份数据。请勿将同步码发给陌生人。
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Settings() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
@@ -304,7 +507,7 @@ export default function Settings() {
   const [transferAmount, setTransferAmount] = useState('');
   const [showRecurringModal, setShowRecurringModal] = useState(false);
   const [editingRule, setEditingRule] = useState<RecurringRule | null>(null);
-  const [activeTab, setActiveTab] = useState<'accounts' | 'recurring'>('accounts');
+  const [activeTab, setActiveTab] = useState<'accounts' | 'recurring' | 'sync'>('accounts');
 
   const { rules, toggleActive, deleteRule, checkAndTrigger } = useRecurring();
   const { accounts, totalBalance, addAccount, deleteAccount, transfer } = useAccounts();
@@ -386,7 +589,19 @@ export default function Settings() {
           fontSize: '13px', fontWeight: 500,
           cursor: 'pointer', fontFamily: "'Noto Sans SC', sans-serif",
         }}>自动记账</button>
+        <button onClick={() => setActiveTab('sync')} style={{
+          flex: 1, padding: '10px 0',
+          background: activeTab === 'sync' ? css.card : 'transparent',
+          border: 'none', borderRadius: '12px',
+          boxShadow: activeTab === 'sync' ? css.shadowRaised : 'none',
+          color: activeTab === 'sync' ? css.text : css.textMuted,
+          fontSize: '13px', fontWeight: 500,
+          cursor: 'pointer', fontFamily: "'Noto Sans SC', sans-serif",
+        }}>云同步</button>
       </div>
+
+      {/* 云同步内容 */}
+      {activeTab === 'sync' && <SyncSettings />}
 
       {/* 账户内容 */}
       {activeTab === 'accounts' && <>
