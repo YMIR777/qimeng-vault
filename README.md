@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# 绮梦帐间
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> 记账是记录存在，不是批判消费。财务软件应该是镜子，不是鞭子。
 
-Currently, two official plugins are available:
+一个温暖的个人记账 PWA，支持跨设备云同步。为小黒秋而建。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 功能
 
-## React Compiler
+- 📝 **魔法输入** — 像写日记一样记账，自然语言解析
+- ⭐ **欲望星体** — 把储蓄目标变成可视化的星星，攒满一颗亮一颗
+- 📊 **工作台** — 陪玩时薪趋势、来源分布、老板分析
+- 📈 **报表中心** — 日报/周报、月度趋势、支出分类、财务健康度
+- 🔄 **周期性记账** — 房租/订阅自动入账，不用每次手动记
+- 🏷️ **标签系统** — 多维度分类，跨类别标记
+- 💸 **债务追踪** — 借出/借入管理，人情账也不落下
+- ☁️ **跨设备同步** — 手机和电脑数据实时互通（Supabase）
+- 📱 **PWA 安装** — 添加到主屏幕，像原生 App 一样用
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 技术栈
 
-## Expanding the ESLint configuration
+| 层 | 技术 |
+|----|------|
+| 框架 | React 19 + TypeScript + Vite 8 |
+| 路由 | React Router v7 |
+| 本地存储 | Dexie.js (IndexedDB) |
+| 云同步 | Supabase (PostgreSQL) |
+| 图表 | Recharts |
+| 动画 | GSAP + CSS keyframes |
+| PWA | vite-plugin-pwa |
+| 部署 | Vercel |
+| 设计 | 暖米色新拟物 (Neumorphism) |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 部署
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+https://qimengzhangjian.vercel.app
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 本地开发
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm run dev -- --host  # 局域网手机测试
+npm run build      # 生产构建
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 项目结构
+
+```
+src/
+├── pages/           # 7 个页面（Dashboard, Wishes, Workbench, Reports, Records, Reflection, Settings）
+├── components/      # UI 组件（magic, reports, ui, wishes, debts, tags, goals, recurring, records, reflection, intro）
+├── store/           # Dexie 数据库 + React hooks（useLedger, useWishes, useAccounts, useBudgets, useTags, useDebts, useRecurring, useGoals, useReports）
+├── supabase/        # Supabase 客户端 + 同步服务
+├── hooks/           # 通用 hooks
+├── utils/           # 工具函数
+└── styles/          # 全局样式
 ```
