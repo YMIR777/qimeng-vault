@@ -312,28 +312,40 @@ function SyncSettings() {
     try {
       const { supabase } = await import('../supabase/client');
       const { db } = await import('../store/db');
+      const code = getSyncCode();
       
-      // 诊断：本地有多少数据
       const txCount = await db.transactions.count();
       const wishCount = await db.wishes.count();
       const localInfo = `本地: ${txCount}笔记录, ${wishCount}个星体`;
       
       if (txCount === 0 && wishCount === 0) {
         setSyncStatus('fail');
-        setSyncResult(`${localInfo}。没有数据可以同步，先去首页记一笔。`);
+        setSyncResult(`${localInfo}。没有数据可以同步。`);
         return;
       }
       
-      // 测试 Supabase 连接
-      const { error: connErr } = await supabase.from('transactions').select('count').limit(0);
-      if (connErr) {
+      // 测试：直接插入一条测试数据
+      const testId = 'test-' + Date.now();
+      const { error: testErr } = await supabase.from('transactions').insert({
+        id: testId, type: 'income', amount: 1, date: Date.now(), createdAt: Date.now(), sync_code: code
+      });
+      if (testErr) {
         setSyncStatus('fail');
-        setSyncResult(`${localInfo}。连接失败: ${connErr.message}`);
+        setSyncResult(`${localInfo}。写入测试失败: ${testErr.message}`);
         return;
       }
+      // 清理测试数据
+      await supabase.from('transactions').delete().eq('id', testId).eq('sync_code', code);
       
       const { fullSync } = await import('../supabase/sync');
       const result = await fullSync();
+      
+      if (result.pushed === 0 && txCount > 0) {
+        setSyncStatus('fail');
+        setSyncResult(`${localInfo}。写入测试通过，但推送返回0。可能是字段不匹配。`);
+        return;
+      }
+      
       setSyncStatus('ok');
       setSyncResult(`${localInfo}。拉取 ${result.pulled} 条，推送 ${result.pushed} 条`);
     } catch (err: any) {
