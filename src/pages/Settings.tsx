@@ -303,6 +303,23 @@ function SyncSettings() {
   const [inputCode, setInputCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'ok' | 'fail'>('idle');
+  const [syncResult, setSyncResult] = useState('');
+
+  const handleSyncNow = async () => {
+    setSyncStatus('syncing');
+    setSyncResult('');
+    try {
+      // 动态导入避免循环依赖
+      const { fullSync } = await import('../supabase/sync');
+      const result = await fullSync();
+      setSyncStatus('ok');
+      setSyncResult(`拉取 ${result.pulled} 条，推送 ${result.pushed} 条`);
+    } catch (err: any) {
+      setSyncStatus('fail');
+      setSyncResult(err?.message || String(err));
+    }
+  };
 
   const handleCopy = async () => {
     try {
@@ -336,6 +353,52 @@ function SyncSettings() {
 
   return (
     <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* 手动同步 */}
+      <div style={{
+        background: css.card,
+        borderRadius: '20px',
+        padding: '24px',
+        boxShadow: css.shadowRaised,
+        textAlign: 'center',
+      }}>
+        <div style={{
+          fontFamily: "'Noto Sans SC', sans-serif",
+          fontSize: '11px',
+          letterSpacing: '0.2em',
+          color: css.textMuted,
+          textTransform: 'uppercase',
+          marginBottom: '14px',
+        }}>同步状态</div>
+        <button
+          onClick={handleSyncNow}
+          disabled={syncStatus === 'syncing'}
+          style={{
+            padding: '14px 32px',
+            background: syncStatus === 'syncing' ? '#e0dbd3' : css.accentGold,
+            border: 'none',
+            borderRadius: '14px',
+            color: syncStatus === 'syncing' ? '#b8af9e' : '#fff',
+            fontSize: '15px',
+            fontWeight: 500,
+            cursor: syncStatus === 'syncing' ? 'not-allowed' : 'pointer',
+            fontFamily: "'Noto Sans SC', sans-serif",
+            boxShadow: syncStatus === 'syncing' ? 'none' : '3px 3px 8px #cdc5b8, -3px -3px 8px #fffbf5',
+          }}
+        >
+          {syncStatus === 'syncing' ? '同步中...' : '立即同步'}
+        </button>
+        {syncResult && (
+          <div style={{
+            marginTop: '12px',
+            fontSize: '12px',
+            color: syncStatus === 'fail' ? '#d4a0a0' : '#7a9e7e',
+            fontFamily: "'Noto Sans SC', sans-serif",
+          }}>
+            {syncStatus === 'fail' ? '失败: ' : ''}{syncResult}
+          </div>
+        )}
+      </div>
+
       {/* 当前同步码 */}
       <div style={{
         background: css.card,
