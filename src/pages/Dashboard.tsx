@@ -14,6 +14,7 @@ import { useToast } from '../components/ui/Toast';
 import { WishPicker } from '../components/wishes/WishPicker';
 import { db } from '../store/db';
 import { Link } from 'react-router-dom';
+import { getSyncCode } from '../supabase/client';
 
 // ── isMobile hook (shared breakpoint: 480px) ─────────────────────
 function useMobile(breakpoint = 480) {
@@ -1098,11 +1099,19 @@ export function Dashboard() {
         {/* 清除 */}
         <button
           onClick={async () => {
-            if (!window.confirm('⚠️ 确定要清除所有数据吗？\n\n这将删除所有记账记录、星体、账户和预算，不可恢复。')) return;
+            if (!window.confirm('⚠️ 确定要清除所有数据吗？\n\n这将删除所有记账记录、星体、账户和预算，包括云端数据。\n\n此操作不可恢复！')) return;
+            const code = getSyncCode();
+            // 清除本地
             await db.transactions.clear();
             await db.wishes.clear();
             await db.accounts.clear();
             await db.budgets.clear();
+            // 清除云端
+            const { supabase } = await import('../supabase/client');
+            await supabase.from('transactions').delete().eq('sync_code', code);
+            await supabase.from('wishes').delete().eq('sync_code', code);
+            await supabase.from('accounts').delete().eq('sync_code', code);
+            await supabase.from('budgets').delete().eq('sync_code', code);
             window.location.reload();
           }}
           style={{

@@ -263,7 +263,7 @@ function EditModal({ tx, onClose, onSave }: EditModalProps) {
 
 export function Records() {
   const pageRef = useRef<HTMLDivElement>(null);
-  const { transactions, updateTransaction } = useLedger();
+  const { transactions, updateTransaction, deleteTransaction } = useLedger();
   const { tags: allTags } = useTags();
   const [search, setSearch] = useState('');
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
@@ -580,6 +580,25 @@ export function Records() {
                     onMouseEnter={e => (e.currentTarget.style.color = '#a89f8e')}
                     onMouseLeave={e => (e.currentTarget.style.color = '#c5bdb0')}
                   >✎</button>
+                  <button
+                    onClick={() => {
+                      if (!window.confirm(`确定删除这条记录吗？\n${tx.note || tx.platform || '未分类'} ${tx.type === 'income' ? '+' : '-'}${tx.amount} 元`)) return;
+                      deleteTransaction(tx.id);
+                    }}
+                    title="删除"
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#d4b0b0',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      transition: 'color 0.2s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#c07070')}
+                    onMouseLeave={e => (e.currentTarget.style.color = '#d4b0b0')}
+                  >✕</button>
                   <span style={{
                     fontFamily: "'Noto Serif SC', serif",
                     fontSize: '16px',
