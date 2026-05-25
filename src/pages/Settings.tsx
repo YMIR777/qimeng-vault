@@ -605,7 +605,7 @@ export default function Settings() {
   const [editingRule, setEditingRule] = useState<RecurringRule | null>(null);
   const [activeTab, setActiveTab] = useState<'accounts' | 'recurring' | 'sync'>('accounts');
 
-  const { rules, toggleActive, deleteRule, checkAndTrigger } = useRecurring();
+  const { rules, toggleActive, deleteRule, checkAndTrigger, addRule, updateRule } = useRecurring();
   const { accounts, totalBalance, addAccount, deleteAccount, transfer } = useAccounts();
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -1014,7 +1014,6 @@ export default function Settings() {
         <RecurringRuleModal
           onClose={() => { setShowRecurringModal(false); setEditingRule(null); }}
           onSave={async (data) => {
-            const { addRule, updateRule } = useRecurring.call({});
             if (editingRule) {
               await updateRule(editingRule.id, data);
             } else {
