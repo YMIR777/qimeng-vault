@@ -21,9 +21,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/app-icon-192.png', 'icons/app-icon-512.png'],
       manifest: {
-        name: '绮梦账间 · 小黒秋的大金库',
-        short_name: '绮梦账间',
-        description: '记账是记录存在，不是批判消费。财务软件应该是镜子，不是鞭子。',
+        name: '绮梦帐间 · 记录存在的痕迹',
+        short_name: '绮梦帐间',
+        description: '记账是记录存在，不是批判消费。',
         theme_color: '#f5f0e8',
         background_color: '#f5f0e8',
         display: 'standalone',
@@ -40,7 +40,7 @@ export default defineConfig({
             type: 'image/png',
           },
           {
-            src: '/icons/app-icon-512.png',
+            src: '/icons/app-icon-maskable.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',

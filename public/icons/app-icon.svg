@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5f0e8"/>
+      <stop offset="100%" stop-color="#ede7db"/>
+    </linearGradient>
+    <linearGradient id="quillGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dba43a"/>
+      <stop offset="100%" stop-color="#c9923a"/>
+    </linearGradient>
+    <linearGradient id="shadowGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#b8862a"/>
+      <stop offset="100%" stop-color="#a07020"/>
+    </linearGradient>
+    <!-- Inner shadow filter -->
+    <filter id="innerShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#8a7a5e" flood-opacity="0.3"/>
+    </filter>
+    <filter id="coinShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#8a7a5e" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="220" fill="url(#bg)" filter="url(#coinShadow)"/>
+  <circle cx="256" cy="256" r="216" fill="none" stroke="#d4c8b0" stroke-width="1.5" opacity="0.5"/>
+  
+  <!-- Outer ring hint -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="rgba(201,146,58,0.15)" stroke-width="2"/>
+  
+  <!-- Stylized feather/quill - main shaft -->
+  <g transform="translate(256,256) rotate(-15)">
+    <!-- Quill shaft -->
+    <path d="M0,-160 Q8,-130 12,-80 Q16,-30 14,20 Q12,60 8,100 Q4,130 0,155" 
+          fill="none" stroke="url(#quillGold)" stroke-width="6" stroke-linecap="round"/>
+    
+    <!-- Feather vanes - left side -->
+    <path d="M0,-155 Q-35,-130 -55,-100 Q-70,-75 -72,-50 Q-68,-40 -55,-42 Q-40,-45 -30,-60 Q-20,-80 -12,-100 Q-5,-120 -1,-140" 
+          fill="rgba(201,146,58,0.7)" stroke="none"/>
+    <!-- Left lower vane -->
+    <path d="M-1,-138 Q-25,-120 -38,-100 Q-48,-80 -50,-62 Q-46,-55 -38,-58 Q-30,-62 -22,-78 Q-15,-98 -3,-118" 
+          fill="rgba(201,146,58,0.5)" stroke="none"/>
+    
+    <!-- Feather vanes - right side -->
+    <path d="M0,-155 Q30,-135 50,-110 Q65,-85 68,-60 Q62,-50 48,-55 Q35,-60 25,-80 Q15,-105 5,-135" 
+          fill="rgba(219,164,58,0.8)" stroke="none"/>
+    <!-- Right lower vane -->
+    <path d="M7,-130 Q30,-112 42,-92 Q50,-72 52,-54 Q48,-48 40,-52 Q32,-58 26,-75 Q18,-100 8,-120" 
+          fill="rgba(219,164,58,0.55)" stroke="none"/>
+    
+    <!-- Quill tip / nib -->
+    <path d="M-2,160 L0,180 L2,160" fill="url(#shadowGold)"/>
+    <line x1="0" y1="155" x2="0" y2="178" stroke="#a07020" stroke-width="1"/>
+    
+    <!-- Ink dot accent at nib -->
+    <circle cx="0" cy="172" r="4" fill="rgba(61,52,39,0.4)"/>
+  </g>
+  
+  <!-- Subtle star/accent - upper right -->
+  <g transform="translate(370,150)" opacity="0.6">
+    <polygon points="0,-16 4,-6 14,-6 7,2 9,13 0,7 -9,13 -7,2 -14,-6 -4,-6" 
+             fill="#dba43a"/>
+  </g>
+</svg>
