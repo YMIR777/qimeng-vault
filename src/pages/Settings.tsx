@@ -310,11 +310,32 @@ function SyncSettings() {
     setSyncStatus('syncing');
     setSyncResult('');
     try {
-      // 动态导入避免循环依赖
+      const { supabase } = await import('../supabase/client');
+      const { db } = await import('../store/db');
+      
+      // 诊断：本地有多少数据
+      const txCount = await db.transactions.count();
+      const wishCount = await db.wishes.count();
+      const localInfo = `本地: ${txCount}笔记录, ${wishCount}个星体`;
+      
+      if (txCount === 0 && wishCount === 0) {
+        setSyncStatus('fail');
+        setSyncResult(`${localInfo}。没有数据可以同步，先去首页记一笔。`);
+        return;
+      }
+      
+      // 测试 Supabase 连接
+      const { error: connErr } = await supabase.from('transactions').select('count').limit(0);
+      if (connErr) {
+        setSyncStatus('fail');
+        setSyncResult(`${localInfo}。连接失败: ${connErr.message}`);
+        return;
+      }
+      
       const { fullSync } = await import('../supabase/sync');
       const result = await fullSync();
       setSyncStatus('ok');
-      setSyncResult(`拉取 ${result.pulled} 条，推送 ${result.pushed} 条`);
+      setSyncResult(`${localInfo}。拉取 ${result.pulled} 条，推送 ${result.pushed} 条`);
     } catch (err: any) {
       setSyncStatus('fail');
       setSyncResult(err?.message || String(err));
