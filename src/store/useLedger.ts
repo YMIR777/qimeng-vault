@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from './db';
 import type { Transaction } from './db';
+import { syncRecord, deleteRemote } from '../supabase/sync';
 
 export function useLedger() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -22,7 +23,8 @@ export function useLedger() {
 
   const addTransaction = async (tx: Omit<Transaction, 'id' | 'createdAt'>) => {
     const id = crypto.randomUUID();
-    await db.transactions.add({ ...tx, id, createdAt: Date.now() });
+    const createdAt = Date.now();
+    await db.transactions.add({ ...tx, id, createdAt });
     
     // 同步更新账户余额
     if (tx.accountId && tx.type !== 'transfer') {
@@ -33,7 +35,7 @@ export function useLedger() {
       }
     }
     
-    // 支出时从愿望余额扣除（按存款从大到小扣）
+    // 支出时从愿望余额扣除
     if (tx.type === 'expense') {
       const buildingWishes = await db.wishes.where('status').equals('building').toArray();
       if (buildingWishes.length > 0) {
@@ -57,6 +59,8 @@ export function useLedger() {
     
     const all = await db.transactions.toArray();
     setTransactions(all);
+    // 后台同步到云端（不阻塞 UI）
+    syncRecord('transactions', { ...tx, id, createdAt }).catch(() => {});
     return id;
   };
 
@@ -64,9 +68,7 @@ export function useLedger() {
     const old = await db.transactions.get(id);
     await db.transactions.update(id, patch);
     
-    // 如果金额或类型变化，重新计算账户余额
     if (old && (patch.amount !== undefined || patch.type !== undefined || patch.accountId !== undefined)) {
-      // 恢复旧账户余额
       if (old.accountId) {
         const oldAcc = await db.accounts.get(old.accountId);
         if (oldAcc) {
@@ -74,7 +76,6 @@ export function useLedger() {
           await db.accounts.update(old.accountId, { balance: oldAcc.balance + oldDelta });
         }
       }
-      // 应用新账户余额
       const newTx = await db.transactions.get(id);
       if (newTx?.accountId && newTx.type !== 'transfer') {
         const newAcc = await db.accounts.get(newTx.accountId);
@@ -87,6 +88,9 @@ export function useLedger() {
     
     const all = await db.transactions.toArray();
     setTransactions(all);
+    // 后台同步
+    const updated = await db.transactions.get(id);
+    if (updated) syncRecord('transactions', updated).catch(() => {});
   };
 
   const deleteTransaction = async (id: string) => {
@@ -99,7 +103,6 @@ export function useLedger() {
       }
     }
     
-    // 删除支出时，恢复愿望余额到存款最多的 building 愿望
     if (tx?.type === 'expense') {
       const buildingWishes = await db.wishes.where('status').equals('building').toArray();
       if (buildingWishes.length > 0) {
@@ -116,6 +119,7 @@ export function useLedger() {
     await db.transactions.delete(id);
     const all = await db.transactions.toArray();
     setTransactions(all);
+    deleteRemote('transactions', id).catch(() => {});
   };
 
   const getTransactionsByWish = async (wishId: string) => {
