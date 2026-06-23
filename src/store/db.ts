@@ -138,7 +138,7 @@ export async function reconcileAccountBalances(): Promise<void> {
   
   for (const acc of accounts) {
     const income = transactions
-      .filter(t => t.type === 'income' && t.accountId === acc.id && t.type !== 'transfer')
+      .filter(t => t.type === 'income' && t.accountId === acc.id)
       .reduce((sum, t) => sum + t.amount, 0);
     const expense = transactions
       .filter(t => t.type === 'expense' && t.accountId === acc.id)
