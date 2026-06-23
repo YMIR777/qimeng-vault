@@ -181,7 +181,7 @@ export function Dashboard() {
   const { transactions, totalAsset, addTransaction, updateTransaction } = useLedger();
   const { wishes, depositToWish } = useWishes();
 
-  const { accounts, totalBalance } = useAccounts();
+  const { accounts } = useAccounts();
   const { tags: allTags } = useTags();
   const { budgets: _budgets } = useBudgets();
   const { showToast } = useToast();
