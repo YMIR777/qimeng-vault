@@ -10,6 +10,10 @@ export function useAccounts() {
 
   useEffect(() => {
     loadAccounts();
+    // 监听对账完成事件，自动刷新
+    const handler = () => loadAccounts();
+    window.addEventListener('accounts:reconciled', handler);
+    return () => window.removeEventListener('accounts:reconciled', handler);
   }, []);
 
   const loadAccounts = async () => {
