@@ -45,7 +45,7 @@ export function useAccounts() {
   const adjustBalance = useCallback(async (id: string, delta: number) => {
     const acc = await db.accounts.get(id);
     if (!acc) return;
-    const newBalance = Math.max(0, acc.balance + delta);
+    const newBalance = acc.balance + delta;
     await db.accounts.update(id, { balance: newBalance });
     await loadAccounts();
   }, []);
@@ -57,6 +57,19 @@ export function useAccounts() {
 
     await db.accounts.update(fromId, { balance: from.balance - amount });
     await db.accounts.update(toId, { balance: to.balance + amount });
+    
+    // 创建转账记录，确保对账时能正确重建余额
+    await db.transactions.add({
+      id: crypto.randomUUID(),
+      type: 'transfer',
+      amount,
+      accountId: fromId,
+      toAccountId: toId,
+      note: `${from.name} → ${to.name}`,
+      date: Date.now(),
+      createdAt: Date.now(),
+    });
+    
     await loadAccounts();
     return true;
   }, []);

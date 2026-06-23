@@ -136,6 +136,14 @@ export function useLedger() {
       }
     }
     
+    // 转账记录：撤销账户余额变动
+    if (tx?.type === 'transfer' && tx.accountId && tx.toAccountId) {
+      const fromAcc = await db.accounts.get(tx.accountId);
+      const toAcc = await db.accounts.get(tx.toAccountId);
+      if (fromAcc) await db.accounts.update(tx.accountId, { balance: fromAcc.balance + tx.amount });
+      if (toAcc) await db.accounts.update(tx.toAccountId, { balance: Math.max(0, toAcc.balance - tx.amount) });
+    }
+    
     if (tx?.type === 'expense') {
       const buildingWishes = await db.wishes.where('status').equals('building').toArray();
       if (buildingWishes.length > 0) {

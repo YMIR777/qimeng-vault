@@ -137,18 +137,29 @@ export async function reconcileAccountBalances(): Promise<void> {
   const transactions = await db.transactions.toArray();
   
   for (const acc of accounts) {
+    // 收入：转入此账户
     const income = transactions
       .filter(t => t.type === 'income' && t.accountId === acc.id)
       .reduce((sum, t) => sum + t.amount, 0);
+    // 支出：从此账户支出
     const expense = transactions
       .filter(t => t.type === 'expense' && t.accountId === acc.id)
       .reduce((sum, t) => sum + t.amount, 0);
-    const newBalance = income - expense;
+    // 转出：从此账户转出到其他账户
+    const transferOut = transactions
+      .filter(t => t.type === 'transfer' && t.accountId === acc.id)
+      .reduce((sum, t) => sum + t.amount, 0);
+    // 转入：从其他账户转入此账户
+    const transferIn = transactions
+      .filter(t => t.type === 'transfer' && t.toAccountId === acc.id)
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const newBalance = income - expense - transferOut + transferIn;
     if (newBalance !== acc.balance) {
       await db.accounts.update(acc.id, { balance: newBalance });
     }
   }
-  console.log('[reconcile] account balances rebuilt from transactions');
+  console.log('[reconcile] account balances rebuilt from transactions (incl. transfers)');
 }
 
 // 清理重复账户：同名账户保留余额较高的那个
@@ -181,6 +192,11 @@ export async function deduplicateAccounts(): Promise<number> {
     const txs = await db.transactions.where('accountId').equals(oldId).toArray();
     for (const tx of txs) {
       await db.transactions.update(tx.id, { accountId: newId });
+    }
+    // 也迁移作为转账目标的引用
+    const txsAsTarget = await db.transactions.where('toAccountId').equals(oldId).toArray();
+    for (const tx of txsAsTarget) {
+      await db.transactions.update(tx.id, { toAccountId: newId });
     }
   }
   
