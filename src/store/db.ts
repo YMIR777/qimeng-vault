@@ -105,6 +105,16 @@ class VaultDatabase extends Dexie {
       debts: '++id, type, status',
       recurringRules: '++id, active, nextDue',
     });
+    // v6: add toAccountId index for transfer queries
+    this.version(6).stores({
+      transactions: '++id, type, date, wishId, accountId, toAccountId, *tags',
+      wishes: '++id, status',
+      accounts: '++id, type',
+      budgets: '++id, category',
+      tags: 'id, name',
+      debts: '++id, type, status',
+      recurringRules: '++id, active, nextDue',
+    });
   }
 }
 
@@ -203,6 +213,18 @@ export async function deduplicateAccounts(): Promise<number> {
   // 删除重复账户
   for (const id of toDelete) {
     await db.accounts.delete(id);
+  }
+  
+  // 同步删除云端的重复账户（防止下次同步又拉回来）
+  if (toDelete.length > 0) {
+    try {
+      const { deleteRemote } = await import('../supabase/sync');
+      for (const id of toDelete) {
+        await deleteRemote('accounts', id);
+      }
+    } catch (err) {
+      console.error('[dedupe] failed to clean remote duplicates:', err);
+    }
   }
   
   console.log(`[dedupe] removed ${toDelete.length} duplicate accounts, migrated ${idMigrations.size} references`);
