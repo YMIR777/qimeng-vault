@@ -145,7 +145,7 @@ export async function reconcileAccountBalances(): Promise<void> {
       .reduce((sum, t) => sum + t.amount, 0);
     const newBalance = income - expense;
     if (newBalance !== acc.balance) {
-      await db.accounts.update(acc.id, { balance: Math.max(0, newBalance) });
+      await db.accounts.update(acc.id, { balance: newBalance });
     }
   }
   console.log('[reconcile] account balances rebuilt from transactions');
