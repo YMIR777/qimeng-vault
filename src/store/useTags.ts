@@ -14,10 +14,16 @@ export function useTags() {
   }, [loadTags]);
 
   const addTag = useCallback(async (name: string, color: string) => {
-    const id = crypto.randomUUID();
-    await db.tags.add({ id, name, color, count: 0, createdAt: Date.now() });
-    await loadTags();
-    return id;
+    try {
+      const id = crypto.randomUUID();
+      const tag = { id, name, color, count: 0, createdAt: Date.now() };
+      await db.tags.put(tag); // put 比 add 更可靠（不抛重复键错误）
+      await loadTags();
+      return id;
+    } catch (err) {
+      console.error('[useTags] addTag failed:', err);
+      throw err;
+    }
   }, [loadTags]);
 
   const updateTag = useCallback(async (id: string, patch: Partial<Tag>) => {

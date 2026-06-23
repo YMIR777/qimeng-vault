@@ -1059,27 +1059,54 @@ export default function Settings() {
 
       {/* 标签管理 */}
       {activeTab === 'tags' && <>
-        <div className="animate-in" style={{ marginBottom: '20px' }}>
-          <div style={{
+        <div className="animate-in" style={{ marginBottom: '24px' }}>
+          <label style={{
+            display: 'block',
             fontFamily: "'Noto Sans SC', sans-serif",
-            fontSize: '13px', color: css.textMuted,
-            marginBottom: '12px', letterSpacing: '0.08em',
+            fontSize: '12px',
+            color: css.textMuted,
+            marginBottom: '10px',
+            letterSpacing: '0.1em',
           }}>
             创建标签
-          </div>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+          </label>
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            padding: '14px 16px',
+            background: css.card,
+            borderRadius: '16px',
+            boxShadow: css.shadowRaised,
+            alignItems: 'center',
+          }}>
+            <div style={{
+              width: '36px', height: '36px',
+              borderRadius: '10px',
+              background: newTagColor,
+              flexShrink: 0,
+              boxShadow: `0 2px 8px ${newTagColor}40`,
+              transition: 'background 0.2s ease',
+            }} />
             <input
               type="text"
               value={newTagName}
               onChange={e => setNewTagName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && newTagName.trim()) { addTag(newTagName.trim(), newTagColor); setNewTagName(''); } }}
-              placeholder="标签名称"
+              onKeyDown={e => {
+                if (e.key === 'Enter' && newTagName.trim()) {
+                  addTag(newTagName.trim(), newTagColor);
+                  setNewTagName('');
+                }
+              }}
+              placeholder="输入标签名称"
               style={{
-                flex: 1, padding: '12px 16px',
-                background: css.card, border: 'none', borderRadius: '12px',
-                boxShadow: css.shadowInset,
-                color: css.text, fontFamily: "'Noto Sans SC', sans-serif",
-                fontSize: '14px', outline: 'none',
+                flex: 1,
+                padding: '10px 0',
+                border: 'none',
+                background: 'transparent',
+                color: css.text,
+                fontFamily: "'Noto Sans SC', sans-serif",
+                fontSize: '14px',
+                outline: 'none',
               }}
             />
             <input
@@ -1087,82 +1114,196 @@ export default function Settings() {
               value={newTagColor}
               onChange={e => setNewTagColor(e.target.value)}
               style={{
-                width: '44px', height: '44px',
-                border: 'none', borderRadius: '12px',
+                width: '28px', height: '28px',
+                border: 'none', borderRadius: '8px',
                 cursor: 'pointer', background: 'transparent',
+                padding: 0,
               }}
+              title="选择颜色"
             />
             <button
-              onClick={() => { if (newTagName.trim()) { addTag(newTagName.trim(), newTagColor); setNewTagName(''); } }}
+              onClick={() => {
+                if (!newTagName.trim()) return;
+                addTag(newTagName.trim(), newTagColor);
+                setNewTagName('');
+              }}
               disabled={!newTagName.trim()}
               style={{
-                padding: '12px 18px', borderRadius: '12px',
-                border: 'none', background: css.accentGold,
-                color: '#fff', fontFamily: "'Noto Sans SC', sans-serif",
-                fontSize: '13px', cursor: 'pointer',
-                opacity: newTagName.trim() ? 1 : 0.5,
+                padding: '8px 16px',
+                borderRadius: '10px',
+                border: 'none',
+                background: newTagName.trim() ? css.accentGold : '#e0dbd3',
+                color: newTagName.trim() ? '#fff' : '#b8af9e',
+                fontFamily: "'Noto Sans SC', sans-serif",
+                fontSize: '13px',
+                fontWeight: 500,
+                cursor: newTagName.trim() ? 'pointer' : 'default',
+                transition: 'all 0.2s ease',
+                transform: newTagName.trim() ? 'none' : 'none',
                 whiteSpace: 'nowrap',
               }}
-            >+ 创建</button>
+              onMouseEnter={e => {
+                if (newTagName.trim()) {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(201,146,58,0.3)';
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >创建</button>
           </div>
         </div>
 
         <div className="animate-in">
           <div style={{
-            fontFamily: "'Noto Sans SC', sans-serif",
-            fontSize: '13px', color: css.textMuted,
-            marginBottom: '12px', letterSpacing: '0.08em',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px',
           }}>
-            已有标签 ({tags.length})
+            <span style={{
+              fontFamily: "'Noto Sans SC', sans-serif",
+              fontSize: '12px',
+              color: css.textMuted,
+              letterSpacing: '0.1em',
+            }}>
+              已有标签
+            </span>
+            <span style={{
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+              fontSize: '11px',
+              color: css.textSecondary,
+            }}>
+              {tags.length} 个
+            </span>
           </div>
           {tags.length === 0 ? (
             <div style={{
-              textAlign: 'center', padding: '32px 16px',
-              color: css.textSecondary, background: css.card,
-              borderRadius: '16px', boxShadow: css.shadowInset,
-              fontSize: '13px',
+              textAlign: 'center',
+              padding: '48px 24px',
+              color: css.textSecondary,
+              background: css.card,
+              borderRadius: '18px',
+              boxShadow: css.shadowInset,
             }}>
-              暂无标签，创建一个吧
+              <div style={{
+                width: '48px', height: '48px',
+                borderRadius: '50%',
+                background: '#e8e1d5',
+                margin: '0 auto 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8af9e" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+              </div>
+              <div style={{
+                fontSize: '14px',
+                fontFamily: "'Noto Sans SC', sans-serif",
+                color: '#a89f8e',
+                marginBottom: '4px',
+              }}>暂无标签</div>
+              <div style={{
+                fontSize: '11px',
+                color: '#c5bdb0',
+                fontFamily: "'Noto Sans SC', sans-serif",
+              }}>在记账时添加标签，或在这里创建</div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {tags.map(tag => (
-                <div key={tag.id} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '12px 16px',
-                  background: css.card, borderRadius: '14px',
-                  boxShadow: css.shadowRaised,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px',
+            }}>
+              {tags.map((tag, i) => (
+                <div
+                  key={tag.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 16px',
+                    background: css.card,
+                    borderRadius: '14px',
+                    boxShadow: css.shadowRaised,
+                    animation: `fadeSlideIn 0.3s ease-out ${i * 0.04}s both`,
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '6px 6px 14px #cdc5b8, -6px -6px 14px #fffbf5';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = css.shadowRaised;
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{
-                      width: '10px', height: '10px', borderRadius: '50%',
-                      background: tag.color, flexShrink: 0,
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%',
+                      background: tag.color,
+                      flexShrink: 0,
+                      boxShadow: `0 0 6px ${tag.color}60`,
                     }} />
                     <span style={{
                       fontFamily: "'Noto Sans SC', sans-serif",
-                      fontSize: '14px', color: css.text,
+                      fontSize: '14px',
+                      color: css.text,
                     }}>{tag.name}</span>
-                    <span style={{
-                      fontSize: '10px', color: css.textMuted,
-                      background: '#e8e1d5', padding: '2px 6px', borderRadius: '4px',
-                    }}>{tag.count || 0} 次</span>
                   </div>
-                  <button
-                    onClick={() => {
-                      if (!window.confirm(`确定删除标签「${tag.name}」吗？\\n\\n所有记录中该标签将被移除。`)) return;
-                      deleteTag(tag.id);
-                    }}
-                    style={{
-                      border: 'none', background: 'transparent',
-                      color: '#d4b0b0', cursor: 'pointer',
-                      fontSize: '14px', padding: '4px 8px', borderRadius: '6px',
-                    }}
-                  >✕</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{
+                      fontSize: '11px',
+                      color: css.textMuted,
+                      background: '#e8e1d5',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Code', monospace",
+                    }}>{tag.count || 0}</span>
+                    <button
+                      onClick={() => {
+                        if (!window.confirm(`确定删除标签「${tag.name}」？\n所有记录中该标签将被移除。`)) return;
+                        deleteTag(tag.id);
+                      }}
+                      style={{
+                        border: 'none',
+                        background: 'transparent',
+                        color: '#d4b0b0',
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        padding: '4px 6px',
+                        borderRadius: '6px',
+                        lineHeight: 1,
+                        transition: 'color 0.15s ease',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#c07070'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#d4b0b0'}
+                      title="删除标签"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        <style>{`
+          @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
       </>}
 
     </div>
