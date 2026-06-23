@@ -110,19 +110,85 @@ class VaultDatabase extends Dexie {
 
 export const db = new VaultDatabase();
 
-// 初始化默认账户
+// 默认账户 — 使用确定性 ID（基于名称哈希），确保跨设备/版本一致
+const DEFAULT_ACCOUNTS = [
+  { id: 'default-wechat',  name: '微信钱包', type: 'wechat' as const,  balance: 0, color: '#7bb32e' },
+  { id: 'default-alipay',  name: '支付宝',   type: 'alipay' as const,  balance: 0, color: '#1677ff' },
+  { id: 'default-cash',    name: '现金',     type: 'cash' as const,    balance: 0, color: '#c9923a' },
+  { id: 'default-bank',    name: '银行卡',   type: 'bank' as const,    balance: 0, color: '#6b9fcf' },
+];
+
+export { DEFAULT_ACCOUNTS };
+
+// 初始化默认账户 — 使用固定 ID，重复调用不会创建重复账户
+// 如果账户已存在（按 ID），跳过；如果不存在，创建
 export async function initDefaultAccounts(): Promise<void> {
-  const count = await db.accounts.count();
-  if (count > 0) return;
+  for (const def of DEFAULT_ACCOUNTS) {
+    const existing = await db.accounts.get(def.id);
+    if (!existing) {
+      await db.accounts.put({ ...def, createdAt: Date.now() });
+    }
+  }
+}
 
-  const defaults: Omit<Account, 'id' | 'createdAt'>[] = [
-    { name: '微信钱包', type: 'wechat', balance: 0, color: '#7bb32e' },
-    { name: '支付宝', type: 'alipay', balance: 0, color: '#1677ff' },
-    { name: '现金', type: 'cash', balance: 0, color: '#c9923a' },
-    { name: '银行卡', type: 'bank', balance: 0, color: '#6b9fcf' },
-  ];
+// 根据交易记录重新计算所有账户余额（修复余额错乱）
+export async function reconcileAccountBalances(): Promise<void> {
+  const accounts = await db.accounts.toArray();
+  const transactions = await db.transactions.toArray();
+  
+  for (const acc of accounts) {
+    const income = transactions
+      .filter(t => t.type === 'income' && t.accountId === acc.id && t.type !== 'transfer')
+      .reduce((sum, t) => sum + t.amount, 0);
+    const expense = transactions
+      .filter(t => t.type === 'expense' && t.accountId === acc.id)
+      .reduce((sum, t) => sum + t.amount, 0);
+    const newBalance = income - expense;
+    if (newBalance !== acc.balance) {
+      await db.accounts.update(acc.id, { balance: Math.max(0, newBalance) });
+    }
+  }
+  console.log('[reconcile] account balances rebuilt from transactions');
+}
 
-  await db.accounts.bulkAdd(
-    defaults.map(d => ({ ...d, id: crypto.randomUUID(), createdAt: Date.now() }))
-  );
+// 清理重复账户：同名账户保留余额较高的那个
+// 并将被删除账户的交易记录迁移到保留的账户
+export async function deduplicateAccounts(): Promise<number> {
+  const accounts = await db.accounts.toArray();
+  const seen = new Map<string, typeof accounts[0]>();
+  const toDelete: string[] = [];
+  const idMigrations = new Map<string, string>(); // oldId → newId
+  
+  for (const acc of accounts) {
+    const existing = seen.get(acc.name);
+    if (existing) {
+      // 重复：保留余额高的
+      if (acc.balance > existing.balance) {
+        idMigrations.set(existing.id, acc.id);
+        toDelete.push(existing.id);
+        seen.set(acc.name, acc);
+      } else {
+        idMigrations.set(acc.id, existing.id);
+        toDelete.push(acc.id);
+      }
+    } else {
+      seen.set(acc.name, acc);
+    }
+  }
+  
+  // 迁移交易记录
+  for (const [oldId, newId] of idMigrations) {
+    const txs = await db.transactions.where('accountId').equals(oldId).toArray();
+    for (const tx of txs) {
+      await db.transactions.update(tx.id, { accountId: newId });
+    }
+  }
+  
+  // 删除重复账户
+  for (const id of toDelete) {
+    await db.accounts.delete(id);
+  }
+  
+  console.log(`[dedupe] removed ${toDelete.length} duplicate accounts, migrated ${idMigrations.size} references`);
+  return toDelete.length;
 }

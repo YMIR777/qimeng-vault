@@ -346,6 +346,11 @@ function SyncSettings() {
       const { fullSync } = await import('../supabase/sync');
       const result = await fullSync();
       
+      // 同步后对账：重建账户余额 + 清理重复账户
+      const { reconcileAccountBalances, deduplicateAccounts } = await import('../store/db');
+      await deduplicateAccounts();
+      await reconcileAccountBalances();
+      
       if (result.pushed === 0 && txCount > 0) {
         setSyncStatus('fail');
         setSyncResult(`${localInfo}。写入测试通过，但推送返回0。可能是字段不匹配。`);
