@@ -172,7 +172,7 @@ export async function reconcileAccountBalances(): Promise<void> {
   console.log('[reconcile] account balances rebuilt from transactions (incl. transfers)');
 }
 
-// 清理重复账户：同名账户保留余额较高的那个
+// 清理重复账户：固定 ID 账户优先，同名保留 canonical 的
 // 并将被删除账户的交易记录迁移到保留的账户
 export async function deduplicateAccounts(): Promise<number> {
   const accounts = await db.accounts.toArray();
@@ -183,8 +183,17 @@ export async function deduplicateAccounts(): Promise<number> {
   for (const acc of accounts) {
     const existing = seen.get(acc.name);
     if (existing) {
-      // 重复：保留余额高的
-      if (acc.balance > existing.balance) {
+      // 规则：固定 ID（default-*）优先于随机 UUID
+      // 同为固定 ID 或同为随机 UUID → 保留余额高的
+      const accIsDefault = acc.id.startsWith('default-');
+      const existingIsDefault = existing.id.startsWith('default-');
+      let keepAcc: boolean;
+      if (accIsDefault !== existingIsDefault) {
+        keepAcc = accIsDefault; // 固定 ID 赢
+      } else {
+        keepAcc = acc.balance > existing.balance; // 余额高赢
+      }
+      if (keepAcc) {
         idMigrations.set(existing.id, acc.id);
         toDelete.push(existing.id);
         seen.set(acc.name, acc);
