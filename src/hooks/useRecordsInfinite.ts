@@ -15,7 +15,7 @@ export function useRecordsInfinite<T>(
   allFilteredTransactions: T[],
   options: UseRecordsInfiniteOptions = {}
 ): UseRecordsInfiniteReturn<T> {
-  const { pageSize = 20 } = options;
+  const { pageSize = 200 } = options;
   const [displayCount, setDisplayCount] = useState(pageSize);
 
   const visibleTransactions = allFilteredTransactions.slice(0, displayCount);

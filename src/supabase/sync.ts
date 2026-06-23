@@ -90,22 +90,18 @@ async function pushTable(tableName: TableName, localTable: any): Promise<number>
   return count;
 }
 
-// ── Full sync: pull everything, then push local changes ──────────
+// ── Full sync: push local first, then pull remote ──────────────
+// Strategy: Local is ALWAYS the primary source.
+// 1. Push all local data to Supabase (uploads your latest changes)
+// 2. Pull any new data from other devices (merges in, won't overwrite)
+// This ensures clicking "同步" always UPLOADS your data first, never
+// lets old remote data overwrite your local records.
 export async function fullSync(): Promise<{ pulled: number; pushed: number }> {
   let pulled = 0;
   let pushed = 0;
 
   try {
-    // Pull from Supabase first
-    pulled += await pullTable('transactions', db.transactions);
-    pulled += await pullTable('wishes', db.wishes);
-    pulled += await pullTable('accounts', db.accounts);
-    pulled += await pullTable('budgets', db.budgets);
-    pulled += await pullTable('tags', db.tags);
-    pulled += await pullTable('debts', db.debts);
-    pulled += await pullTable('recurringRules', db.recurringRules);
-
-    // Then push any local-only records
+    // Step 1: PUSH local to Supabase first — upload is the priority
     pushed += await pushTable('transactions', db.transactions);
     pushed += await pushTable('wishes', db.wishes);
     pushed += await pushTable('accounts', db.accounts);
@@ -114,9 +110,20 @@ export async function fullSync(): Promise<{ pulled: number; pushed: number }> {
     pushed += await pushTable('debts', db.debts);
     pushed += await pushTable('recurringRules', db.recurringRules);
 
-    console.log(`[sync] pulled ${pulled}, pushed ${pushed}`);
+    // Step 2: Then PULL from Supabase — gets data from other devices
+    // Uses bulkPut which adds new records, updates existing by id
+    pulled += await pullTable('transactions', db.transactions);
+    pulled += await pullTable('wishes', db.wishes);
+    pulled += await pullTable('accounts', db.accounts);
+    pulled += await pullTable('budgets', db.budgets);
+    pulled += await pullTable('tags', db.tags);
+    pulled += await pullTable('debts', db.debts);
+    pulled += await pullTable('recurringRules', db.recurringRules);
+
+    console.log(`[sync] pushed ${pushed} local → cloud, pulled ${pulled} cloud → local`);
   } catch (err) {
     console.error('[sync] fullSync error:', err);
+    throw err;
   }
 
   return { pulled, pushed };

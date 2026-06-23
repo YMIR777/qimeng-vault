@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { useLedger } from '../store/useLedger';
 import { useAccounts } from '../store/useAccounts';
 import { useWishes } from '../store/useWishes';
+import { useTags } from '../store/useTags';
 import { useBudgets } from '../store/useBudgets';
 import { getStoredGoals } from '../store/useGoals';
 import type { ParseResult } from '../components/magic/parseInput';
@@ -177,10 +178,11 @@ function AccountOverview() {
 }
 
 export function Dashboard() {
-  const { transactions, totalAsset, addTransaction, updateTransaction } = useLedger();
+  const { transactions, addTransaction, updateTransaction } = useLedger();
   const { wishes, depositToWish } = useWishes();
 
-  const { accounts } = useAccounts();
+  const { accounts, totalBalance } = useAccounts();
+  const { tags: allTags } = useTags();
   const { budgets: _budgets } = useBudgets();
   const { showToast } = useToast();
   const pageRef = useRef<HTMLDivElement>(null);
@@ -220,12 +222,12 @@ export function Dashboard() {
       if (!start) start = now;
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      setDisplayNumber(startValue + (totalAsset - startValue) * easeOut(progress));
+      setDisplayNumber(startValue + (totalBalance - startValue) * easeOut(progress));
       if (progress < 1) requestAnimationFrame(tick);
     }
 
     requestAnimationFrame(tick);
-  }, [totalAsset]);
+  }, [totalBalance]);
 
   async function handleInputSubmit(result: ParseResult) {
     try {
@@ -959,6 +961,21 @@ export function Dashboard() {
                     {tx.category && <span style={{ padding: '1px 6px', background: '#e8e1d5', borderRadius: '4px', fontSize: '9px' }}>{tx.category}</span>}
                     {tx.platform && <span style={{ padding: '1px 6px', background: '#e8e1d5', borderRadius: '4px', fontSize: '9px' }}>{tx.platform}</span>}
                     {tx.bossName ? <span>· {tx.bossName}</span> : ''}
+                    {(tx.tags || []).map(tagId => {
+                      const tag = allTags.find(t => t.id === tagId);
+                      if (!tag) return null;
+                      return (
+                        <span key={tagId} style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '3px',
+                          padding: '1px 6px', borderRadius: '4px', fontSize: '9px',
+                          color: tag.color, background: `${tag.color}18`,
+                          border: `1px solid ${tag.color}40`,
+                        }}>
+                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: tag.color, flexShrink: 0 }} />
+                          {tag.name}
+                        </span>
+                      );
+                    })}
                   </span>
                 </div>
                 <div className="font-mono" style={{

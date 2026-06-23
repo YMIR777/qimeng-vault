@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from './db';
 import type { Debt } from './db';
+import { deleteRemote } from '../supabase/sync';
 
 export function useDebts() {
   const [debts, setDebts] = useState<Debt[]>([]);
@@ -32,6 +33,10 @@ export function useDebts() {
 
   async function deleteDebt(id: string) {
     await db.debts.delete(id);
+    // 同步删除云端
+    deleteRemote('debts', id).catch((err) =>
+      console.error('[useDebts] deleteRemote failed:', err)
+    );
     const all = await db.debts.toArray();
     setDebts(all);
   }

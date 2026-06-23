@@ -6,6 +6,7 @@ import { useTags } from '../store/useTags';
 import type { Transaction } from '../store/db';
 import { RecordsFilterBar } from '../components/records/RecordsFilterBar';
 import { MonthlyStats } from '../components/records/MonthlyStats';
+import { TagPicker } from '../components/tags/TagPicker';
 
 const PLATFORMS = ['比心', '微信', '抖音', '小红书', '建行', '招行'];
 const EXPENSE_CATEGORIES = ['交通', '餐饮', '娱乐', '购物', '住房', '医疗', '通讯', '其他'];
@@ -32,6 +33,7 @@ function EditModal({ tx, onClose, onSave }: EditModalProps) {
   const [bossName, setBossName] = useState(tx.bossName || '');
   const [timeSpent, setTimeSpent] = useState(tx.timeSpent || 0);
   const [note, setNote] = useState(tx.note || '');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(tx.tags || []);
   const isIncome = tx.type === 'income';
 
   function handleSave() {
@@ -45,6 +47,7 @@ function EditModal({ tx, onClose, onSave }: EditModalProps) {
       patch.timeSpent = timeSpent || undefined;
     } else {
       patch.category = category || undefined;
+      patch.tags = selectedTagIds.length > 0 ? selectedTagIds : undefined;
     }
     onSave(patch);
   }
@@ -136,6 +139,17 @@ function EditModal({ tx, onClose, onSave }: EditModalProps) {
               >{c}</button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* 标签（仅支出） */}
+      {!isIncome && (
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{
+            display: 'block', fontSize: '12px', color: 'var(--text-secondary)',
+            marginBottom: '6px', letterSpacing: '0.1em',
+          }}>标签 <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>（可选）</span></label>
+          <TagPicker selectedIds={selectedTagIds} onChange={setSelectedTagIds} />
         </div>
       )}
 

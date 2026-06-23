@@ -26,6 +26,14 @@ export function useLedger() {
     const createdAt = Date.now();
     await db.transactions.add({ ...tx, id, createdAt });
     
+    // 更新标签使用次数
+    if (tx.tags && tx.tags.length > 0) {
+      for (const tagId of tx.tags) {
+        const tag = await db.tags.get(tagId);
+        if (tag) await db.tags.update(tagId, { count: (tag.count || 0) + 1 });
+      }
+    }
+    
     // 同步更新账户余额
     if (tx.accountId && tx.type !== 'transfer') {
       const acc = await db.accounts.get(tx.accountId);
@@ -68,6 +76,22 @@ export function useLedger() {
     const old = await db.transactions.get(id);
     await db.transactions.update(id, patch);
     
+    // 更新标签使用次数
+    if (patch.tags !== undefined && old) {
+      const oldTags = old.tags || [];
+      const newTags = patch.tags || [];
+      const removed = oldTags.filter(t => !newTags.includes(t));
+      const added = newTags.filter(t => !oldTags.includes(t));
+      for (const tagId of removed) {
+        const tag = await db.tags.get(tagId);
+        if (tag) await db.tags.update(tagId, { count: Math.max(0, (tag.count || 0) - 1) });
+      }
+      for (const tagId of added) {
+        const tag = await db.tags.get(tagId);
+        if (tag) await db.tags.update(tagId, { count: (tag.count || 0) + 1 });
+      }
+    }
+    
     if (old && (patch.amount !== undefined || patch.type !== undefined || patch.accountId !== undefined)) {
       if (old.accountId) {
         const oldAcc = await db.accounts.get(old.accountId);
@@ -95,6 +119,15 @@ export function useLedger() {
 
   const deleteTransaction = async (id: string) => {
     const tx = await db.transactions.get(id);
+    
+    // 减少标签使用次数
+    if (tx?.tags && tx.tags.length > 0) {
+      for (const tagId of tx.tags) {
+        const tag = await db.tags.get(tagId);
+        if (tag) await db.tags.update(tagId, { count: Math.max(0, (tag.count || 0) - 1) });
+      }
+    }
+    
     if (tx?.accountId && tx.type !== 'transfer') {
       const acc = await db.accounts.get(tx.accountId);
       if (acc) {

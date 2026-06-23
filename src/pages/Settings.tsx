@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { useAccounts } from '../store/useAccounts';
 import { useBudgets } from '../store/useBudgets';
 import { useRecurring } from '../store/useRecurring';
+import { useTags } from '../store/useTags';
 import { RecurringRuleCard } from '../components/recurring/RecurringRuleCard';
 import { RecurringRuleModal } from '../components/recurring/RecurringRuleModal';
 import type { RecurringRule } from '../store/db';
@@ -331,7 +332,12 @@ function SyncSettings() {
       });
       if (testErr) {
         setSyncStatus('fail');
-        setSyncResult(`${localInfo}。写入测试失败: ${testErr.message}`);
+        const msg = testErr.message || String(testErr);
+        if (msg.includes('Load failed') || msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+          setSyncResult(`${localInfo}。无法连接云端 — Supabase 项目可能已休眠（免费版 1 周无活动自动暂停）。\n\n👉 去 supabase.com/dashboard 点击 "Restore project" 恢复即可。`);
+        } else {
+          setSyncResult(`${localInfo}。写入测试失败: ${msg}`);
+        }
         return;
       }
       // 清理测试数据
@@ -347,7 +353,7 @@ function SyncSettings() {
       }
       
       setSyncStatus('ok');
-      setSyncResult(`${localInfo}。拉取 ${result.pulled} 条，推送 ${result.pushed} 条`);
+      setSyncResult(`${localInfo}。✅ 上传 ${result.pushed} 条 → 云端 | 拉取 ${result.pulled} 条 ← 其他设备`);
     } catch (err: any) {
       setSyncStatus('fail');
       setSyncResult(err?.message || String(err));
@@ -402,6 +408,14 @@ function SyncSettings() {
           textTransform: 'uppercase',
           marginBottom: '14px',
         }}>同步状态</div>
+        <div style={{
+          fontSize: '11px', color: css.textMuted,
+          marginBottom: '14px', lineHeight: 1.6,
+          fontFamily: "'Noto Sans SC', sans-serif",
+        }}>
+          点击后 <b>先上传本机数据</b> → 再拉取其他设备数据<br />
+          本机数据不会被旧数据覆盖 ✅
+        </div>
         <button
           onClick={handleSyncNow}
           disabled={syncStatus === 'syncing'}
@@ -603,10 +617,13 @@ export default function Settings() {
   const [transferAmount, setTransferAmount] = useState('');
   const [showRecurringModal, setShowRecurringModal] = useState(false);
   const [editingRule, setEditingRule] = useState<RecurringRule | null>(null);
-  const [activeTab, setActiveTab] = useState<'accounts' | 'recurring' | 'sync'>('accounts');
+  const [activeTab, setActiveTab] = useState<'accounts' | 'recurring' | 'sync' | 'tags'>('accounts');
 
   const { rules, toggleActive, deleteRule, checkAndTrigger, addRule, updateRule } = useRecurring();
   const { accounts, totalBalance, addAccount, deleteAccount, transfer } = useAccounts();
+  const { tags, addTag, deleteTag } = useTags();
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#c9923a');
   const pageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -694,6 +711,15 @@ export default function Settings() {
           fontSize: '13px', fontWeight: 500,
           cursor: 'pointer', fontFamily: "'Noto Sans SC', sans-serif",
         }}>云同步</button>
+        <button onClick={() => setActiveTab('tags')} style={{
+          flex: 1, padding: '10px 0',
+          background: activeTab === 'tags' ? css.card : 'transparent',
+          border: 'none', borderRadius: '12px',
+          boxShadow: activeTab === 'tags' ? css.shadowRaised : 'none',
+          color: activeTab === 'tags' ? css.text : css.textMuted,
+          fontSize: '13px', fontWeight: 500,
+          cursor: 'pointer', fontFamily: "'Noto Sans SC', sans-serif",
+        }}>标签</button>
       </div>
 
       {/* 云同步内容 */}
@@ -1026,6 +1052,113 @@ export default function Settings() {
         />
       )}
 
+      {/* 标签管理 */}
+      {activeTab === 'tags' && <>
+        <div className="animate-in" style={{ marginBottom: '20px' }}>
+          <div style={{
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '13px', color: css.textMuted,
+            marginBottom: '12px', letterSpacing: '0.08em',
+          }}>
+            创建标签
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <input
+              type="text"
+              value={newTagName}
+              onChange={e => setNewTagName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && newTagName.trim()) { addTag(newTagName.trim(), newTagColor); setNewTagName(''); } }}
+              placeholder="标签名称"
+              style={{
+                flex: 1, padding: '12px 16px',
+                background: css.card, border: 'none', borderRadius: '12px',
+                boxShadow: css.shadowInset,
+                color: css.text, fontFamily: "'Noto Sans SC', sans-serif",
+                fontSize: '14px', outline: 'none',
+              }}
+            />
+            <input
+              type="color"
+              value={newTagColor}
+              onChange={e => setNewTagColor(e.target.value)}
+              style={{
+                width: '44px', height: '44px',
+                border: 'none', borderRadius: '12px',
+                cursor: 'pointer', background: 'transparent',
+              }}
+            />
+            <button
+              onClick={() => { if (newTagName.trim()) { addTag(newTagName.trim(), newTagColor); setNewTagName(''); } }}
+              disabled={!newTagName.trim()}
+              style={{
+                padding: '12px 18px', borderRadius: '12px',
+                border: 'none', background: css.accentGold,
+                color: '#fff', fontFamily: "'Noto Sans SC', sans-serif",
+                fontSize: '13px', cursor: 'pointer',
+                opacity: newTagName.trim() ? 1 : 0.5,
+                whiteSpace: 'nowrap',
+              }}
+            >+ 创建</button>
+          </div>
+        </div>
+
+        <div className="animate-in">
+          <div style={{
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontSize: '13px', color: css.textMuted,
+            marginBottom: '12px', letterSpacing: '0.08em',
+          }}>
+            已有标签 ({tags.length})
+          </div>
+          {tags.length === 0 ? (
+            <div style={{
+              textAlign: 'center', padding: '32px 16px',
+              color: css.textSecondary, background: css.card,
+              borderRadius: '16px', boxShadow: css.shadowInset,
+              fontSize: '13px',
+            }}>
+              暂无标签，创建一个吧
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {tags.map(tag => (
+                <div key={tag.id} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  background: css.card, borderRadius: '14px',
+                  boxShadow: css.shadowRaised,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{
+                      width: '10px', height: '10px', borderRadius: '50%',
+                      background: tag.color, flexShrink: 0,
+                    }} />
+                    <span style={{
+                      fontFamily: "'Noto Sans SC', sans-serif",
+                      fontSize: '14px', color: css.text,
+                    }}>{tag.name}</span>
+                    <span style={{
+                      fontSize: '10px', color: css.textMuted,
+                      background: '#e8e1d5', padding: '2px 6px', borderRadius: '4px',
+                    }}>{tag.count || 0} 次</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!window.confirm(`确定删除标签「${tag.name}」吗？\\n\\n所有记录中该标签将被移除。`)) return;
+                      deleteTag(tag.id);
+                    }}
+                    style={{
+                      border: 'none', background: 'transparent',
+                      color: '#d4b0b0', cursor: 'pointer',
+                      fontSize: '14px', padding: '4px 8px', borderRadius: '6px',
+                    }}
+                  >✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </>}
 
     </div>
   );

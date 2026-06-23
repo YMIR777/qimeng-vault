@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db, type Account } from './db';
+import { deleteRemote } from '../supabase/sync';
 
 
 
@@ -31,6 +32,13 @@ export function useAccounts() {
 
   const deleteAccount = useCallback(async (id: string) => {
     await db.accounts.delete(id);
+    // 同步删除云端记录，防止下次 fullSync 拉回来
+    try {
+      await deleteRemote('accounts', id);
+    } catch (err) {
+      console.error('[useAccounts] deleteRemote failed:', err);
+      // 本地已删，远程失败不影响 UI（下次 fullSync 会重试）
+    }
     await loadAccounts();
   }, []);
 

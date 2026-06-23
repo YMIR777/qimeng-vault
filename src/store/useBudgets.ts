@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from './db';
 import type { Budget } from './db';
+import { deleteRemote } from '../supabase/sync';
 
 export function useBudgets() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -30,6 +31,10 @@ export function useBudgets() {
 
   const deleteBudget = useCallback(async (id: string) => {
     await db.budgets.delete(id);
+    // 同步删除云端
+    deleteRemote('budgets', id).catch((err) =>
+      console.error('[useBudgets] deleteRemote failed:', err)
+    );
     await loadBudgets();
   }, []);
 
