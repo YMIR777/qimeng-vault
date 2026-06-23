@@ -164,9 +164,13 @@ export async function reconcileAccountBalances(): Promise<void> {
       .filter(t => t.type === 'transfer' && t.toAccountId === acc.id)
       .reduce((sum, t) => sum + t.amount, 0);
     
-    const newBalance = income - expense - transferOut + transferIn;
-    if (newBalance !== acc.balance) {
-      await db.accounts.update(acc.id, { balance: newBalance });
+    // 只有该账户有交易记录时才重建余额（保留手动调整的余额）
+    const hasTransactions = income + expense + transferOut + transferIn > 0;
+    if (hasTransactions) {
+      const newBalance = income - expense - transferOut + transferIn;
+      if (newBalance !== acc.balance) {
+        await db.accounts.update(acc.id, { balance: Math.max(0, newBalance) });
+      }
     }
   }
   console.log('[reconcile] account balances rebuilt from transactions (incl. transfers)');

@@ -178,10 +178,10 @@ function AccountOverview() {
 }
 
 export function Dashboard() {
-  const { transactions, totalAsset, addTransaction, updateTransaction } = useLedger();
+  const { transactions, addTransaction, updateTransaction } = useLedger();
   const { wishes, depositToWish } = useWishes();
 
-  const { accounts } = useAccounts();
+  const { accounts, totalBalance } = useAccounts();
   const { tags: allTags } = useTags();
   const { budgets: _budgets } = useBudgets();
   const { showToast } = useToast();
@@ -222,12 +222,12 @@ export function Dashboard() {
       if (!start) start = now;
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      setDisplayNumber(startValue + (totalAsset - startValue) * easeOut(progress));
+      setDisplayNumber(startValue + (totalBalance - startValue) * easeOut(progress));
       if (progress < 1) requestAnimationFrame(tick);
     }
 
     requestAnimationFrame(tick);
-  }, [totalAsset]);
+  }, [totalBalance]);
 
   async function handleInputSubmit(result: ParseResult) {
     try {
